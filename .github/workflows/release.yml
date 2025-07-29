@@ -1,0 +1,290 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag to release (e.g., 1.0.1)'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    outputs:
+      pr_number: ${{ steps.find-pr.outputs.pr_number }}
+      release_branch: ${{ steps.find-pr.outputs.release_branch }}
+    steps:
+      - name: Validate tag format and existence
+        run: |
+          # Validate tag format
+          if ! [[ "${{ github.event.inputs.tag }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid tag format: ${{ github.event.inputs.tag }}"
+            echo "Tag must be in semantic format (X.Y.Z)"
+            exit 1
+          fi
+          echo "✅ Tag format is valid: ${{ github.event.inputs.tag }}"
+
+          # Extract version from tag
+          VERSION="${{ github.event.inputs.tag }}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify tag exists
+        run: |
+          # Check if tag exists
+          if ! git rev-parse "${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
+            echo "❌ Tag ${{ github.event.inputs.tag }} does not exist"
+            echo "Please create the tag locally and push it before running this workflow"
+            exit 1
+          fi
+          echo "✅ Tag ${{ github.event.inputs.tag }} exists"
+
+      - name: Find and validate release PR
+        id: find-pr
+        run: |
+          RELEASE_BRANCH="release/$VERSION"
+          echo "🔍 Looking for PR from $RELEASE_BRANCH to main"
+
+          # Find PR number
+          PR_NUMBER=$(gh pr list --state open --base main --head "$RELEASE_BRANCH" --json number --jq '.[0].number // empty')
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "❌ No open PR found from $RELEASE_BRANCH to main"
+            echo "Please create a release PR first"
+            exit 1
+          fi
+
+          echo "✅ Found PR #$PR_NUMBER"
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "release_branch=$RELEASE_BRANCH" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Run TypeScript tests using existing workflow
+  ts-tests:
+    uses: ./.github/workflows/ts-tests.yml
+    with:
+      ref: ${{ github.event.inputs.tag }}
+    needs: release
+
+  # Run pre-commit checks using existing workflow
+  pre-commit-checks:
+    uses: ./.github/workflows/enforce-pre-commit.yml
+    with:
+      ref: ${{ github.event.inputs.tag }}
+    needs: release
+
+  # Run e2e tests using existing workflow
+  e2e-tests:
+    uses: ./.github/workflows/playwright.yml
+    with:
+      ref: ${{ github.event.inputs.tag }}
+    needs: release
+
+  # Continue with build after all tests pass
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    needs: [release, ts-tests, pre-commit-checks, e2e-tests]
+
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    env:
+      VERSION: ${{ github.event.inputs.tag }}
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'streamlit_pdf/frontend/package-lock.json'
+
+      - name: Install frontend dependencies
+        run: |
+          cd streamlit_pdf/frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          echo "🏗️ Building frontend"
+          cd streamlit_pdf/frontend
+          npm run build
+
+      - name: Build Python package
+        run: |
+          echo "🏗️ Building Python package"
+          python -m pip install --upgrade pip build
+          python -m build
+
+      - name: Verify build artifacts
+        run: |
+          echo "🔍 Verifying build artifacts"
+          ls -la dist/
+          if [ ! -f "dist/streamlit_pdf-$VERSION-py3-none-any.whl" ]; then
+            echo "❌ Expected wheel file not found"
+            exit 1
+          fi
+          if [ ! -f "dist/streamlit_pdf-$VERSION.tar.gz" ]; then
+            echo "❌ Expected source distribution not found"
+            exit 1
+          fi
+          echo "✅ Build artifacts verified"
+
+      - name: Store package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: dist/
+          retention-days: 30
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+
+      - name: Configure git for release
+        run: |
+          git config --global user.email "core+streamlitbot-github@streamlit.io"
+          git config --global user.name "Streamlit Bot"
+
+      - name: Create GitHub release
+        run: |
+          echo "📋 Creating GitHub release"
+
+          # Get PR body for release notes
+          PR_BODY=$(gh pr view ${{ needs.release.outputs.pr_number }} --json body --jq '.body')
+
+          # Create release with artifacts
+          gh release create "v$VERSION" \
+            --title "Release v$VERSION" \
+            --notes "$PR_BODY" \
+            --verify-tag \
+            dist/*
+
+          echo "✅ GitHub release created"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send Slack notification (success)
+        if: success()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          echo "📢 Sending success notification to Slack"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{
+              \"text\": \"🎉 streamlit-pdf-viewer v$VERSION has been released!\",
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"🎉 *streamlit-pdf-viewer v$VERSION* has been released!\"
+                  }
+                },
+                {
+                  \"type\": \"section\",
+                  \"fields\": [
+                    {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"*Version:*\nv$VERSION\"
+                    },
+                    {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"*GitHub Release:*\n<https://github.com/${{ github.repository }}/releases/tag/v$VERSION|View Release>\"
+                    }
+                  ]
+                },
+                {
+                  \"type\": \"section\",
+                  \"fields\": [
+                    {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"*PyPI:*\n<$PYPI_URL|View on PyPI>\"
+                    },
+                    {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"*Workflow:*\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"
+                    }
+                  ]
+                }
+              ]
+            }" \
+            $SLACK_WEBHOOK
+
+      - name: Merge release PR
+        if: success()
+        run: |
+          echo "🔄 Merging PR #${{ needs.release.outputs.pr_number }}"
+          gh pr merge ${{ needs.release.outputs.pr_number }} --squash --auto
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send Slack notification (failure)
+        if: failure()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          echo "📢 Sending failure notification to Slack"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{
+              \"text\": \"❌ Release v$VERSION failed!\",
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"❌ *streamlit-pdf-viewer v$VERSION* release failed!\"
+                  }
+                },
+                {
+                  \"type\": \"section\",
+                  \"fields\": [
+                    {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"*Version:*\nv$VERSION\"
+                    },
+                    {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"*Workflow:*\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Failed Run>\"
+                    }
+                  ]
+                }
+              ]
+            }" \
+            $SLACK_WEBHOOK
+
+      - name: Release summary
+        if: success()
+        run: |
+          echo "🎉 Release v$VERSION completed successfully!"
+          echo ""
+          echo "📦 Artifacts:"
+          echo "  - PyPI: https://pypi.org/project/streamlit-pdf/$VERSION/"
+          echo "  - GitHub: https://github.com/${{ github.repository }}/releases/tag/v$VERSION"
+          echo ""
+          echo "🔗 Links:"
+          echo "  - Merged PR: https://github.com/${{ github.repository }}/pull/${{ needs.release.outputs.pr_number }}"
+          echo "  - Git tag: ${{ github.event.inputs.tag }}"

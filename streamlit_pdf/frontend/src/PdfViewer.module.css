@@ -1,0 +1,255 @@
+/**
+ * Copyright 2025 Snowflake Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.container {
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--background-color);
+  position: relative;
+}
+
+.content {
+  background-color: var(--secondary-background-color);
+  overflow: auto;
+  padding: 0;
+  position: relative;
+  border-radius: 8px;
+}
+
+.noFileContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background-color: var(--secondary-background-color);
+  border: 2px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.noFileIcon {
+  font-size: 48px;
+  margin: 0 auto 16px auto;
+  display: block;
+}
+
+.noFileTitle {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.noFileText {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--text-color-secondary);
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.loadingContent {
+  text-align: center;
+}
+
+.spinner {
+  border: 2px solid var(--secondary-background-color);
+  border-top: 2px solid var(--primary-color);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingText {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--text-color-secondary);
+}
+
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.errorIcon {
+  font-size: 48px;
+  margin: 0 auto 16px auto;
+  display: block;
+}
+
+.errorTitle {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.errorText {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--text-color-secondary);
+}
+
+.documentContainer {
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  padding-top: 12px;
+}
+
+.virtualContainer {
+  width: 100%;
+  position: relative;
+}
+
+.virtualItem {
+  position: absolute;
+  top: 0;
+  height: auto;
+  padding-bottom: 12px;
+}
+
+.pageContainer {
+  display: block;
+  background-color: var(--background-color);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: visible;
+  margin: 0;
+}
+
+.pdfPage {
+  display: block;
+}
+
+.pdfPage canvas {
+  display: block;
+}
+
+.pagePlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--default-page-height, 800px);
+  background-color: var(--secondary-background-color);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--text-color-secondary);
+  font-size: 14px;
+}
+
+/* Zoom Controls */
+.zoomControls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0.625rem 0.625rem 0 0; /* 10px in rem units */
+  z-index: 10;
+  background-color: var(--background-color);
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.2s ease;
+  opacity: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.zoomControls.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.zoomButton {
+  background-color: transparent;
+  color: var(--text-color);
+  border: none;
+  border-radius: 0;
+  width: 29px;
+  height: 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: "Source Sans", sans-serif;
+  user-select: none;
+  padding: 0;
+  outline: none;
+  box-sizing: border-box;
+  position: relative;
+}
+
+
+
+.zoomButton svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.zoomButton + .zoomButton {
+  border-top: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.zoomButton:first-child {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.zoomButton:last-child {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.zoomButton:hover:not(.disabled) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.zoomButton:focus {
+  box-shadow: 0 0 2px 2px #0096ff;
+}
+
+.zoomButton:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+.zoomButton.disabled {
+  cursor: not-allowed;
+}
+
+.zoomButton.disabled svg {
+  opacity: 0.25;
+}

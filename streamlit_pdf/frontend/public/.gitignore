@@ -1,0 +1,5 @@
+# PDF.js Assets (copied from node_modules/pdfjs-dist at build time)
+workers/
+cmaps/
+standard_fonts/
+
