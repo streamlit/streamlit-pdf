@@ -159,7 +159,7 @@ jobs:
           path: dist/
           retention-days: 30
 
-      - name: Publish to TestPyPI
+      - name: Publish to TestPyPI #This is a test PyPI server, not the real one
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
