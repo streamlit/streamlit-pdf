@@ -18,7 +18,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "streamlit-pdf"
-version = "1.0.2"
+version = "1.0.3"
 description = "A Streamlit component for viewing PDF files"
 readme = "README.md"
 license = {text = "Apache-2.0"}
