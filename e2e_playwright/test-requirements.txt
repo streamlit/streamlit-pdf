@@ -4,4 +4,4 @@ playwright==1.49.*
 pytest-playwright>=0.3.3
 pytest-xdist
 
-dist/streamlit_pdf-1.0.0-py3-none-any.whl
+dist/streamlit_pdf-1.0.1-py3-none-any.whl
