@@ -165,6 +165,7 @@ jobs:
         with:
           packages-dir: dist/
           repository-url: https://test.pypi.org/legacy/
+          verbose: true
 
 
       - name: Configure git for release
