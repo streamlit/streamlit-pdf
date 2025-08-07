@@ -242,7 +242,7 @@ jobs:
         if: success()
         run: |
           echo "🔄 Merging PR #${{ needs.release.outputs.pr_number }}"
-          gh pr merge ${{ needs.release.outputs.pr_number }} --squash --auto
+          gh pr merge ${{ needs.release.outputs.pr_number }} --squash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
