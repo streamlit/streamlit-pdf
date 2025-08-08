@@ -70,24 +70,6 @@ def update_test_requirements(version: str, project_root: Path) -> None:
     print(f"✅ Updated test-requirements.txt: {version}")
 
 
-def update_notices_file(version: str, project_root: Path) -> None:
-    """Update version in NOTICES file"""
-    notices_file = project_root / "NOTICES"
-    if not notices_file.exists():
-        print("⚠️  NOTICES file not found, skipping")
-        return
-
-    content = notices_file.read_text()
-
-    # Update pdf-viewer version line
-    updated_content = re.sub(
-        r"pdf-viewer \d+\.\d+\.\d+", f"pdf-viewer {version}", content
-    )
-
-    notices_file.write_text(updated_content)
-    print(f"✅ Updated NOTICES file: {version}")
-
-
 def validate_version(version: str) -> bool:
     """Validate that version follows semantic versioning pattern"""
     pattern = r"^\d+\.\d+\.\d+$"
@@ -129,7 +111,6 @@ def main():
         update_pyproject_toml(new_version, project_root)
         update_package_json(new_version, project_root)
         update_test_requirements(new_version, project_root)
-        update_notices_file(new_version, project_root)
 
         print(f"\n🎉 Successfully updated all version references to {new_version}")
         print("\nNext steps:")
