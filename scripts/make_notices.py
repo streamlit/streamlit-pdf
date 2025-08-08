@@ -38,6 +38,8 @@ if __name__ == "__main__":
                 "--plainVertical",
                 "--customPath",
                 "/dev/stdin",
+                "--excludePackages",
+                "pdf-viewer",
             ],
             cwd=str(FRONTEND_DIR),
             stdin=subprocess.PIPE,
