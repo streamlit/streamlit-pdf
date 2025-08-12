@@ -20,6 +20,7 @@ Updates version in pyproject.toml, package.json, and test requirements.
 
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -70,6 +71,36 @@ def update_test_requirements(version: str, project_root: Path) -> None:
     print(f"✅ Updated test-requirements.txt: {version}")
 
 
+def run_npm_install(project_root: Path) -> None:
+    """Run npm install in the frontend directory to update package-lock.json"""
+    frontend_dir = project_root / "streamlit_pdf" / "frontend"
+
+    print(f"📦 Running npm install in {frontend_dir.relative_to(project_root)}...")
+
+    try:
+        # Run npm install in the frontend directory
+        subprocess.run(
+            ["npm", "install"],
+            cwd=frontend_dir,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        print("✅ Successfully ran npm install and updated package-lock.json")
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️  Failed to run npm install: {e}")
+        print(f"    stdout: {e.stdout}")
+        print(f"    stderr: {e.stderr}")
+        print(
+            "    You may need to run 'npm install' manually in streamlit_pdf/frontend/"
+        )
+    except FileNotFoundError:
+        print("⚠️  npm not found. Please ensure npm is installed and in your PATH.")
+        print(
+            "    You'll need to run 'npm install' manually in streamlit_pdf/frontend/"
+        )
+
+
 def validate_version(version: str) -> bool:
     """Validate that version follows semantic versioning pattern"""
     pattern = r"^\d+\.\d+\.\d+$"
@@ -112,13 +143,13 @@ def main():
         update_package_json(new_version, project_root)
         update_test_requirements(new_version, project_root)
 
+        # Run npm install to update package-lock.json
+        run_npm_install(project_root)
+
         print(f"\n🎉 Successfully updated all version references to {new_version}")
         print("\nNext steps:")
-        print(
-            "1. Run 'npm install' in streamlit_pdf/frontend/ to update package-lock.json"
-        )
-        print("2. Commit the changes")
-        print("3. Create/update your release PR")
+        print("1. Commit the changes")
+        print("2. Create/update your release PR")
 
     except Exception as e:
         print(f"❌ Error updating version: {e}")
