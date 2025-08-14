@@ -13,11 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import streamlit as st
-import streamlit_pdf
-from pathlib import Path
-import io
+
 import base64
+import io
+from pathlib import Path
+
+import streamlit_pdf
+
+try:
+    import streamlit as st
+except ImportError as e:
+    raise RuntimeError(
+        "streamlit-pdf requires Streamlit at runtime. "
+        "Install either 'streamlit', e.g.:\n"
+        "  pip install streamlit\n"
+        "or install the extra:\n"
+        "  pip install streamlit-pdf[with-streamlit]"
+    ) from e
+
 
 st.set_page_config(page_title="PDF Viewer Example", page_icon="📄")
 

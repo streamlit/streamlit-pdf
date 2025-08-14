@@ -5,3 +5,4 @@ pytest-playwright>=0.3.3
 pytest-xdist
 
 dist/streamlit_pdf-1.0.5-py3-none-any.whl
+streamlit>=1.28.0

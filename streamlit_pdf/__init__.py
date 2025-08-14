@@ -13,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import streamlit.components.v1 as components
-import streamlit as st
 import io
+import os
 from pathlib import Path
-from typing import Union, Optional, Dict, Any
-
+from typing import Any, Dict, Optional, Union
 
 # Create a _RELEASE constant. We'll set this to False while we're developing
 # the component, and True when we're ready to package and distribute it.
@@ -28,12 +25,42 @@ from typing import Union, Optional, Dict, Any
 _DEV = os.environ.get("DEV", False)
 _RELEASE = not _DEV
 
+# Streamlit is an optional runtime dependency. We avoid importing it at module import
+# time so that simply importing this package does not require Streamlit to be
+# installed. We will raise a clear error message if a runtime entrypoint is used
+# without Streamlit being present.
+try:
+    import streamlit as st  # type: ignore
+    import streamlit.components.v1 as components  # type: ignore
+
+    _STREAMLIT_AVAILABLE = True
+except Exception:  # pragma: no cover - only hits when Streamlit is absent
+    st = None  # type: ignore
+    components = None  # type: ignore
+    _STREAMLIT_AVAILABLE = False
+
+
+def _raise_streamlit_required() -> None:
+    raise RuntimeError(
+        "streamlit-pdf requires Streamlit at runtime. "
+        "Install either 'streamlit', e.g.:\n"
+        "  pip install streamlit\n"
+        "or install the extra:\n"
+        "  pip install streamlit-pdf[with-streamlit]"
+    )
+
+
 # Declare a Streamlit component for PDF viewing
 if not _RELEASE:
-    _component_func = components.declare_component(
-        "pdf_viewer",
-        url="http://localhost:3001",
-    )
+    if _STREAMLIT_AVAILABLE:
+        _component_func = components.declare_component(
+            "pdf_viewer",
+            url="http://localhost:3001",
+        )
+    else:
+
+        def _component_func(**_kwargs):  # type: ignore
+            _raise_streamlit_required()
 else:
     # When we're distributing a production version of the component, we'll
     # replace the `url` param with `path`, and point it to the component's
@@ -41,7 +68,12 @@ else:
     parent_dir = os.path.dirname(os.path.abspath(__file__))
     build_dir = os.path.join(parent_dir, "frontend/build")
 
-    _component_func = components.declare_component("pdf_viewer", path=build_dir)
+    if _STREAMLIT_AVAILABLE:
+        _component_func = components.declare_component("pdf_viewer", path=build_dir)
+    else:
+
+        def _component_func(**_kwargs):  # type: ignore
+            _raise_streamlit_required()
 
 
 def pdf_viewer(
@@ -100,7 +132,6 @@ def pdf_viewer(
     ...     pdf_buffer = io.BytesIO(f.read())
     >>> pdf_viewer(pdf_buffer)
     """
-
     # Process the file parameter
     processed_file = _process_file_input(file)
 
@@ -127,6 +158,12 @@ def _process_file_input(
     str
         A URL that the frontend can use to load the PDF
     """
+    # Ensure Streamlit is available at runtime
+    if not _STREAMLIT_AVAILABLE:
+        _raise_streamlit_required()
+
+    assert st is not None  # for type checkers
+
     # Handle empty string case - return empty string to let frontend handle it
     if isinstance(file, str) and not file:
         return ""
