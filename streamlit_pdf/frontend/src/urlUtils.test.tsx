@@ -106,4 +106,45 @@ describe("mergeFileUrlWithStreamlitUrl", () => {
       )
     })
   })
+
+  describe("with encoded streamlitUrl from Community Cloud in query", () => {
+    beforeEach(() => {
+      const encoded =
+        "streamlitUrl=https%3A%2F%2Fst-pdf.streamlit.app%2F~%2F%2B%2F"
+      setSearch(encoded)
+    })
+
+    it("decodes and merges correctly", () => {
+      expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
+        "https://st-pdf.streamlit.app/~/+/media/file.pdf"
+      )
+    })
+  })
+
+  describe("Multipage apps locally", () => {
+    beforeEach(() => {
+      const encoded = "streamlitUrl=http%3A%2F%2Flocalhost%3A8501%2FPDF_Viewer"
+      setSearch(encoded)
+    })
+
+    it("decodes and merges correctly", () => {
+      expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
+        "http://localhost:8501/media/file.pdf"
+      )
+    })
+  })
+
+  describe("Multipage apps in Community Cloud", () => {
+    beforeEach(() => {
+      const encoded =
+        "streamlitUrl=https%3A%2F%2Fst-pdf.streamlit.app%2F~%2F%2B%2FPDF_Viewer"
+      setSearch(encoded)
+    })
+
+    it("decodes and merges correctly", () => {
+      expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
+        "https://st-pdf.streamlit.app/~/+/media/file.pdf"
+      )
+    })
+  })
 })
