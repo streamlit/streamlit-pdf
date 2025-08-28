@@ -67,9 +67,9 @@ const PAGE_MARGIN = 12
  * @returns {ReactElement} The rendered PDF viewer component
  */
 function PDFViewer({ args, theme }: ComponentProps): ReactElement {
-  const { file: baseFileUrl, height = 600 } = args
+  const { file: fileUrl, height = 600 } = args
 
-  const file = mergeFileUrlWithStreamlitUrl(baseFileUrl)
+  const file = mergeFileUrlWithStreamlitUrl(fileUrl)
 
   const [numPages, setNumPages] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(true)
