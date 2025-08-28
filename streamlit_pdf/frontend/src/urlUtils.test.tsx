@@ -20,7 +20,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { mergeFileUrlWithStreamlitUrl } from "./urlUtils"
 
 const setSearch = (search: string) => {
-  const url = search ? (search.startsWith("?") ? search : `?${search}`) : "/"
+  const url = search ? `?${search}` : "/"
   window.history.replaceState({}, "", url)
 }
 
@@ -29,10 +29,12 @@ describe("mergeFileUrlWithStreamlitUrl", () => {
     setSearch("")
   })
 
-  it("returns URL as-is when not under /media", () => {
-    setSearch("streamlitUrl=http://localhost:8501")
+  describe("with streamlitUrl in query", () => {
+    beforeEach(() => {
+      setSearch("streamlitUrl=http://localhost:8501")
+    })
 
-    const urls = [
+    it.each([
       "https://example.com/file.pdf",
       "http://example.com/file.pdf",
       "//cdn.example.com/file.pdf",
@@ -42,64 +44,66 @@ describe("mergeFileUrlWithStreamlitUrl", () => {
       "/media",
       "data:application/pdf;base64,AAA",
       "blob:https://example.com/123",
-    ]
+    ])("returns non-media URL as-is: %s", url => {
+      expect(mergeFileUrlWithStreamlitUrl(url)).toBe(url)
+    })
 
-    for (const u of urls) {
-      expect(mergeFileUrlWithStreamlitUrl(u)).toBe(u)
-    }
+    it.each([
+      "http://localhost:8501",
+      "http://localhost:8501/",
+      "http://localhost:8501///",
+    ])("merges base variant %s with media path", base => {
+      setSearch(`streamlitUrl=${base}`)
+      expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
+        "http://localhost:8501/media/file.pdf"
+      )
+    })
+
+    it("normalizes multiple leading slashes on media path", () => {
+      expect(mergeFileUrlWithStreamlitUrl("///media/file.pdf")).toBe(
+        "http://localhost:8501/media/file.pdf"
+      )
+    })
+
+    it("preserves nested media subpaths", () => {
+      expect(mergeFileUrlWithStreamlitUrl("/media/sub/dir/file.pdf")).toBe(
+        "http://localhost:8501/media/sub/dir/file.pdf"
+      )
+    })
   })
 
-  it("returns URL as-is when no streamlitUrl present (no query)", () => {
-    const fileUrl = "/media/file.pdf"
-    expect(mergeFileUrlWithStreamlitUrl(fileUrl)).toBe(fileUrl)
+  describe("without streamlitUrl (no query)", () => {
+    beforeEach(() => {
+      setSearch("")
+    })
+
+    it("returns media URL as-is", () => {
+      const fileUrl = "/media/file.pdf"
+      expect(mergeFileUrlWithStreamlitUrl(fileUrl)).toBe(fileUrl)
+    })
   })
 
-  it("returns URL as-is when query exists but streamlitUrl missing", () => {
-    setSearch("foo=bar&baz=1")
-    const fileUrl = "/media/file.pdf"
-    expect(mergeFileUrlWithStreamlitUrl(fileUrl)).toBe(fileUrl)
+  describe("without streamlitUrl (unrelated query)", () => {
+    beforeEach(() => {
+      setSearch("foo=bar&baz=1")
+    })
+
+    it("returns media URL as-is", () => {
+      const fileUrl = "/media/file.pdf"
+      expect(mergeFileUrlWithStreamlitUrl(fileUrl)).toBe(fileUrl)
+    })
   })
 
-  it("merges base without trailing slash and media path", () => {
-    setSearch("streamlitUrl=http://localhost:8501")
-    expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
-      "http://localhost:8501/media/file.pdf"
-    )
-  })
+  describe("with encoded streamlitUrl in query", () => {
+    beforeEach(() => {
+      const encoded = "streamlitUrl=http%3A%2F%2Flocalhost%3A8501%2F"
+      setSearch(encoded)
+    })
 
-  it("normalizes trailing slash on base URL", () => {
-    setSearch("streamlitUrl=http://localhost:8501/")
-    expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
-      "http://localhost:8501/media/file.pdf"
-    )
-  })
-
-  it("normalizes multiple trailing slashes on base URL", () => {
-    setSearch("streamlitUrl=http://localhost:8501///")
-    expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
-      "http://localhost:8501/media/file.pdf"
-    )
-  })
-
-  it("normalizes multiple leading slashes on media path", () => {
-    setSearch("streamlitUrl=http://localhost:8501")
-    expect(mergeFileUrlWithStreamlitUrl("///media/file.pdf")).toBe(
-      "http://localhost:8501/media/file.pdf"
-    )
-  })
-
-  it("preserves nested media subpaths", () => {
-    setSearch("streamlitUrl=http://localhost:8501")
-    expect(mergeFileUrlWithStreamlitUrl("/media/sub/dir/file.pdf")).toBe(
-      "http://localhost:8501/media/sub/dir/file.pdf"
-    )
-  })
-
-  it("accepts encoded streamlitUrl parameter", () => {
-    const encoded = "streamlitUrl=http%3A%2F%2Flocalhost%3A8501%2F"
-    setSearch(encoded)
-    expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
-      "http://localhost:8501/media/file.pdf"
-    )
+    it("decodes and merges correctly", () => {
+      expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
+        "http://localhost:8501/media/file.pdf"
+      )
+    })
   })
 })

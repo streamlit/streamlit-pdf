@@ -45,6 +45,29 @@ const getStreamlitUrl = () => {
   return streamlitUrl || null
 }
 
+/**
+ * Merges a Streamlit-served media path with the Streamlit app base URL from the
+ * current page's query string (the `streamlitUrl` parameter).
+ *
+ * Behavior:
+ * - If `fileUrl` is `undefined`, returns `undefined`.
+ * - If `fileUrl` does not start with `/media/` (after collapsing any leading
+ *   slashes), returns `fileUrl` unchanged.
+ * - If no `streamlitUrl` query parameter is present, returns `fileUrl`
+ *   unchanged.
+ * - When merging, trailing slashes are trimmed from the base URL and leading
+ *   slashes from the media path to avoid duplicate slashes.
+ * - Inputs like `///media/file.pdf` are normalized and treated as media paths.
+ *
+ * Example:
+ * - Given `?streamlitUrl=http://localhost:8501`,
+ *   `mergeFileUrlWithStreamlitUrl("/media/file.pdf")` →
+ *   `http://localhost:8501/media/file.pdf`.
+ * - `mergeFileUrlWithStreamlitUrl("https://example.com/file.pdf")` → unchanged.
+ *
+ * @param fileUrl The input file URL or path. May be absolute or a `/media/`-relative path.
+ * @returns The merged absolute URL when applicable, otherwise the original `fileUrl` (or `undefined`).
+ */
 export const mergeFileUrlWithStreamlitUrl = (fileUrl: string | undefined) => {
   if (!fileUrl) {
     return undefined
