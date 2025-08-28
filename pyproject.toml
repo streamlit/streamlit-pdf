@@ -47,7 +47,7 @@ requires-python = ">=3.9"
 [project.urls]
 Homepage = "https://streamlit.io"
 "Source Code" = "https://github.com/streamlit/streamlit-pdf"
-"Bug Tracker" = "https://github.com/streamlit/streamlit-pdf/issues"
+"Bug Tracker" = "https://github.com/streamlit/streamlit/issues"
 Community = "https://discuss.streamlit.io/"
 Twitter = "https://twitter.com/streamlit"
 
