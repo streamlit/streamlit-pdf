@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import "@testing-library/jest-dom"
+import { vi } from "vitest"
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
   root = null
-  rootMargin = ''
+  rootMargin = ""
   thresholds = []
 
   observe = vi.fn()
@@ -29,14 +29,19 @@ global.IntersectionObserver = class IntersectionObserver {
   disconnect = vi.fn()
   takeRecords = vi.fn()
 
-  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+  constructor(
+    callback: IntersectionObserverCallback,
+    options?: IntersectionObserverInit
+  ) {
     // Store the callback and options if needed for testing
   }
 }
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation((callback: ResizeObserverCallback) => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+global.ResizeObserver = vi
+  .fn()
+  .mockImplementation((callback: ResizeObserverCallback) => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }))

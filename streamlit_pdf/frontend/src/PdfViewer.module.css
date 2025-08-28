@@ -82,8 +82,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loadingText {
@@ -185,11 +189,14 @@
   opacity: 0;
   padding: 0;
   overflow: hidden;
+  /* Prevent zoom controls from capturing mouse events when they are not visible */
+  pointer-events: none;
 }
 
 .zoomControls.visible {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .zoomButton {
@@ -211,8 +218,6 @@
   box-sizing: border-box;
   position: relative;
 }
-
-
 
 .zoomButton svg {
   display: block;
