@@ -15,7 +15,7 @@
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
-    "format": "prettier --write src/**/*.tsx",
+    "format": "prettier --write src/**/*.{ts,tsx,css}",
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage"
