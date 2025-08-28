@@ -32,6 +32,7 @@ import { flushSync } from "react-dom"
 import { Document, Page, pdfjs } from "react-pdf"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import styles from "./PdfViewer.module.css"
+import { mergeFileUrlWithStreamlitUrl } from "./urlUtils"
 
 // Configure PDF.js worker to use local file
 // In Streamlit components, files are served from the same origin
@@ -66,7 +67,9 @@ const PAGE_MARGIN = 12
  * @returns {ReactElement} The rendered PDF viewer component
  */
 function PDFViewer({ args, theme }: ComponentProps): ReactElement {
-  const { file, height = 600 } = args
+  const { file: baseFileUrl, height = 600 } = args
+
+  const file = mergeFileUrlWithStreamlitUrl(baseFileUrl)
 
   const [numPages, setNumPages] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(true)
