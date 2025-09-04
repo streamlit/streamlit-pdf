@@ -197,11 +197,13 @@ def _process_file_input(
             raise RuntimeError(f"Cannot process provided data of type: {type(file)}")
 
         # Add to media file manager
-        from streamlit.runtime import Runtime
+        from streamlit import runtime
 
-        runtime = Runtime.instance()
-        pdf_url = runtime.media_file_mgr.add(
-            data_or_filename, "application/pdf", coordinates
-        )
+        if runtime.exists():
+            pdf_url = runtime.get_instance().media_file_mgr.add(
+                data_or_filename, "application/pdf", coordinates
+            )
+            return pdf_url
 
-        return pdf_url
+        # When running in "bare execution", we can't access the MediaFileManager.
+        return ""
