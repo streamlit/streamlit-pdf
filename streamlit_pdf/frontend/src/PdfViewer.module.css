@@ -18,12 +18,12 @@
 .container {
   width: 100%;
   overflow: hidden;
-  background-color: var(--background-color);
+  background-color: var(--st-background-color);
   position: relative;
 }
 
 .content {
-  background-color: var(--secondary-background-color);
+  background-color: var(--st-secondary-background-color);
   overflow: auto;
   padding: 0;
   position: relative;
@@ -35,7 +35,7 @@
   align-items: center;
   justify-content: center;
   padding: 32px;
-  background-color: var(--secondary-background-color);
+  background-color: var(--st-secondary-background-color);
   border: 2px dashed rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   text-align: center;
@@ -51,13 +51,13 @@
   margin-top: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-color);
+  color: var(--st-text-color);
 }
 
 .noFileText {
   margin-top: 4px;
   font-size: 14px;
-  color: var(--text-color-secondary);
+  color: var(--st-text-color);
 }
 
 .loadingContainer {
@@ -72,8 +72,8 @@
 }
 
 .spinner {
-  border: 2px solid var(--secondary-background-color);
-  border-top: 2px solid var(--primary-color);
+  border: 2px solid var(--st-secondary-background-color);
+  border-top: 2px solid var(--st-primary-color);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -93,7 +93,7 @@
 .loadingText {
   margin-top: 12px;
   font-size: 14px;
-  color: var(--text-color-secondary);
+  color: var(--st-text-color);
 }
 
 .errorContainer {
@@ -114,13 +114,13 @@
   margin-top: 8px;
   font-size: 16px;
   font-weight: 500;
-  color: var(--text-color);
+  color: var(--st-text-color);
 }
 
 .errorText {
   margin-top: 4px;
   font-size: 14px;
-  color: var(--text-color-secondary);
+  color: var(--st-text-color);
 }
 
 .documentContainer {
@@ -144,7 +144,7 @@
 
 .pageContainer {
   display: block;
-  background-color: var(--background-color);
+  background-color: var(--st-background-color);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   overflow: visible;
@@ -164,9 +164,9 @@
   align-items: center;
   justify-content: center;
   height: var(--default-page-height, 800px);
-  background-color: var(--secondary-background-color);
+  background-color: var(--st-secondary-background-color);
   border: 1px solid rgba(0, 0, 0, 0.1);
-  color: var(--text-color-secondary);
+  color: var(--st-text-color);
   font-size: 14px;
 }
 
@@ -181,7 +181,7 @@
   right: 0;
   margin: 0.625rem 0.625rem 0 0; /* 10px in rem units */
   z-index: 10;
-  background-color: var(--background-color);
+  background-color: var(--st-background-color);
   border: none;
   border-radius: 4px;
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
@@ -201,7 +201,7 @@
 
 .zoomButton {
   background-color: transparent;
-  color: var(--text-color);
+  color: var(--st-text-color);
   border: none;
   border-radius: 0;
   width: 29px;
@@ -244,7 +244,7 @@
 }
 
 .zoomButton:focus {
-  box-shadow: 0 0 2px 2px #0096ff;
+  box-shadow: 0 0 0 2px var(--st-primary-color);
 }
 
 .zoomButton:focus:not(:focus-visible) {
