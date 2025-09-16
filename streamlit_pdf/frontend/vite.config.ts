@@ -43,15 +43,15 @@ export default defineConfig(({ mode }) => {
         targets: [
           {
             src: path.join(pdfjsDistPath, "build", "pdf.worker.min.mjs"),
-            dest: "workers",
+            dest: "assets/workers",
           },
           {
             src: path.join(pdfjsDistPath, "cmaps/*"),
-            dest: "cmaps",
+            dest: "assets/cmaps",
           },
           {
             src: path.join(pdfjsDistPath, "standard_fonts/*"),
-            dest: "standard_fonts",
+            dest: "assets/standard_fonts",
           },
         ],
       }),

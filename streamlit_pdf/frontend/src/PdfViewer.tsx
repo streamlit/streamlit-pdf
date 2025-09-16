@@ -36,10 +36,7 @@ type PdfViewerProps = {
 
 // Configure PDF.js worker to use local file
 // In Streamlit components, files are served from the same origin
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  /* @vite-ignore */ "../workers/pdf.worker.min.mjs",
-  import.meta.url as unknown as string
-).toString()
+pdfjs.GlobalWorkerOptions.workerSrc = `${import.meta.env.BASE_URL}workers/pdf.worker.min.mjs`
 
 // Zoom control constants
 const MIN_ZOOM = 0.5
@@ -89,15 +86,9 @@ function PDFViewer({
   // Memoize PDF.js options to prevent unnecessary re-renders
   const pdfOptions = useMemo(
     () => ({
-      cMapUrl: new URL(
-        /* @vite-ignore */ "../cmaps/",
-        import.meta.url as unknown as string
-      ).toString(),
+      cMapUrl: `${import.meta.env.BASE_URL}cmaps/`,
       cMapPacked: true,
-      standardFontDataUrl: new URL(
-        /* @vite-ignore */ "../standard_fonts/",
-        import.meta.url as unknown as string
-      ).toString(),
+      standardFontDataUrl: `${import.meta.env.BASE_URL}standard_fonts/`,
     }),
     []
   )
