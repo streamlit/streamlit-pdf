@@ -106,4 +106,15 @@ Feel free to file issues in [our Streamlit Repository](https://github.com/stream
 
 Contributions are welcome 🚀, however, please inform us before building a feature.
 
+### Development flow
+
+```bash
+uv pip install -e .
+cd streamlit_pdf/frontend
+npm install
+npm run build
+```
+
+- You can watch the frontend changes by running `npm run watch` in the `streamlit_pdf/frontend` directory.
+
 ---

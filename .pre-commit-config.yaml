@@ -46,6 +46,8 @@ repos:
           |^streamlit_pdf/frontend/package-lock\.json$
           |^streamlit_pdf/frontend/\.prettierrc$
           |^streamlit_pdf/frontend/\.env$
+          |^streamlit_pdf/frontend/streamlit-component-v2-lib-.*\.tgz$
+          |^streamlit-.*\.whl$
       - id: format-ts-js
         name: Checks that all JS/TS files are formatted correctly
         entry: bash -c 'cd streamlit_pdf/frontend && npm run format'
@@ -60,7 +62,7 @@ repos:
         files: \.(s?css|jsx?|tsx?)$
         args:
           - --comment-style
-          - "/**| *| */"
+          - '/**| *| */'
           - --license-filepath
           - scripts/license-template.txt
           - --fuzzy-match-generates-todo
@@ -73,7 +75,7 @@ repos:
         files: \.py$|\.pyi$
         args:
           - --comment-style
-          - "|#|"
+          - '|#|'
           - --license-filepath
           - scripts/license-template.txt
           - --fuzzy-match-generates-todo
@@ -82,7 +84,7 @@ repos:
         files: \.html$
         args:
           - --comment-style
-          - "<!--||-->"
+          - '<!--||-->'
           - --license-filepath
           - scripts/license-template.txt
           - --fuzzy-match-generates-todo
@@ -96,7 +98,7 @@ repos:
           |^streamlit_pdffrontend/public/fonts
           |^NOTICES$
       - id: check-added-large-files
-        args: ["--maxkb=1024"]
+        args: ['--maxkb=1024']
         exclude: |
           (?x)
           |^NOTICES$
