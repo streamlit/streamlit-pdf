@@ -78,5 +78,5 @@ streamlit_pdf = [
 ]
 
 [[tool.streamlit.component.components]]
-name = "streamlit_pdf.pdf_viewer"
-asset_dir = "streamlit_pdf/frontend/build"
+name = "pdf_viewer"
+asset_dir = "frontend/build"

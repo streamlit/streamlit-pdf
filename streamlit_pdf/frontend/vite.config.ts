@@ -33,7 +33,7 @@ export default defineConfig(({ mode }) => {
   const port = env.VITE_PORT ? parseInt(env.VITE_PORT) : 3001
 
   // Get the path to pdfjs-dist
-  const pdfjsDistPath = path.dirname(require.resolve('pdfjs-dist/package.json'))
+  const pdfjsDistPath = path.dirname(require.resolve("pdfjs-dist/package.json"))
 
   return {
     base: "./",
@@ -42,27 +42,54 @@ export default defineConfig(({ mode }) => {
       viteStaticCopy({
         targets: [
           {
-            src: path.join(pdfjsDistPath, 'build', 'pdf.worker.min.mjs'),
-            dest: 'workers'
+            src: path.join(pdfjsDistPath, "build", "pdf.worker.min.mjs"),
+            dest: "workers",
           },
           {
-            src: path.join(pdfjsDistPath, 'cmaps/*'),
-            dest: 'cmaps'
+            src: path.join(pdfjsDistPath, "cmaps/*"),
+            dest: "cmaps",
           },
           {
-            src: path.join(pdfjsDistPath, 'standard_fonts/*'),
-            dest: 'standard_fonts'
-          }
-        ]
-      })
+            src: path.join(pdfjsDistPath, "standard_fonts/*"),
+            dest: "standard_fonts",
+          },
+        ],
+      }),
     ],
     server: {
       port,
     },
+    define: {
+      "process.env.NODE_ENV": JSON.stringify(
+        mode === "production" ? "production" : "development"
+      ),
+      "process.env": JSON.stringify({}),
+    },
     build: {
       outDir: "build",
+      // TODO: Put this behind a flag
+      sourcemap: true,
       assetsDir: "assets",
       copyPublicDir: true,
+      cssCodeSplit: false,
+      lib: {
+        entry: path.resolve(__dirname, "src/index.tsx"),
+        formats: ["es"],
+        fileName: () => "assets/index-[hash].js",
+      },
+      rollupOptions: {
+        output: {
+          entryFileNames: "assets/index-[hash].js",
+          chunkFileNames: "assets/chunk-[hash].js",
+          assetFileNames: assetInfo => {
+            const name = assetInfo.name || "asset"
+            if (name.endsWith(".css")) {
+              return "assets/index-[hash][extname]"
+            }
+            return "assets/[name]-[hash][extname]"
+          },
+        },
+      },
     },
     publicDir: "public",
   } satisfies UserConfig

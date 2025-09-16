@@ -15,31 +15,31 @@
  * limitations under the License.
  */
 
-import {
-  Streamlit,
-  withStreamlitConnection,
-  ComponentProps,
-} from "streamlit-component-lib"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import React, {
+  ReactElement,
   useCallback,
   useEffect,
-  useState,
-  ReactElement,
   useMemo,
   useRef,
+  useState,
 } from "react"
 import { flushSync } from "react-dom"
 import { Document, Page, pdfjs } from "react-pdf"
-import { useVirtualizer } from "@tanstack/react-virtual"
 import styles from "./PdfViewer.module.css"
 import { mergeFileUrlWithStreamlitUrl } from "./urlUtils"
+
+type PdfViewerProps = {
+  file?: string
+  height?: number
+}
 
 // Configure PDF.js worker to use local file
 // In Streamlit components, files are served from the same origin
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "./workers/pdf.worker.min.mjs",
-  window.location.href
-).href
+  /* @vite-ignore */ "../workers/pdf.worker.min.mjs",
+  import.meta.url as unknown as string
+).toString()
 
 // Zoom control constants
 const MIN_ZOOM = 0.5
@@ -59,16 +59,13 @@ const PAGE_MARGIN = 12
 /**
  * A simple Streamlit component for viewing PDF files with virtualization
  *
- * @param {ComponentProps} props - The props object passed from Streamlit
- * @param {Object} props.args - Custom arguments passed from the Python side
- * @param {string} props.args.file - PDF file URL or base64 data
- * @param {number} props.args.height - Display height (optional, defaults to 600)
- * @param {Object} props.theme - Theme information from Streamlit
+ * @param {PdfViewerProps} props - Component props
  * @returns {ReactElement} The rendered PDF viewer component
  */
-function PDFViewer({ args, theme }: ComponentProps): ReactElement {
-  const { file: fileUrl, height = 600 } = args
-
+function PDFViewer({
+  file: fileUrl,
+  height = 600,
+}: PdfViewerProps): ReactElement {
   const file = mergeFileUrlWithStreamlitUrl(fileUrl)
 
   const [numPages, setNumPages] = useState<number>(0)
@@ -92,9 +89,15 @@ function PDFViewer({ args, theme }: ComponentProps): ReactElement {
   // Memoize PDF.js options to prevent unnecessary re-renders
   const pdfOptions = useMemo(
     () => ({
-      cMapUrl: "/cmaps/",
+      cMapUrl: new URL(
+        /* @vite-ignore */ "../cmaps/",
+        import.meta.url as unknown as string
+      ).toString(),
       cMapPacked: true,
-      standardFontDataUrl: "/standard_fonts/",
+      standardFontDataUrl: new URL(
+        /* @vite-ignore */ "../standard_fonts/",
+        import.meta.url as unknown as string
+      ).toString(),
     }),
     []
   )
@@ -166,10 +169,7 @@ function PDFViewer({ args, theme }: ComponentProps): ReactElement {
     }
   }, [updateContainerWidth])
 
-  // Set frame height when component state changes
-  useEffect(() => {
-    Streamlit.setFrameHeight()
-  }, [numPages, loading, error, height])
+  // In CCv2, the component participates in the page layout directly. No iframe height to set.
 
   // Handle scroll events to hide zoom controls
   useEffect(() => {
@@ -517,4 +517,4 @@ function PDFViewer({ args, theme }: ComponentProps): ReactElement {
   )
 }
 
-export default withStreamlitConnection(PDFViewer)
+export default PDFViewer

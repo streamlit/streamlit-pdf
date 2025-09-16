@@ -15,21 +15,40 @@
  * limitations under the License.
  */
 
-import React, { StrictMode } from "react"
+import type { Component, ComponentState } from "@streamlit/component-v2-lib"
+import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import PDFViewer from "./PdfViewer"
 import "./index.css"
 
-const rootElement = document.getElementById("root")
-
-if (!rootElement) {
-  throw new Error("Root element not found")
+interface ViewerState extends ComponentState {
+  numPages?: number
+  zoom?: number
+  error?: { main: string; help: string } | null
 }
 
-const root = createRoot(rootElement)
+interface ViewerData {
+  file?: string
+  height?: number
+}
 
-root.render(
-  <StrictMode>
-    <PDFViewer />
-  </StrictMode>
-)
+const ComponentEntry: Component<ViewerState, ViewerData> = component => {
+  const { data, parentElement } = component
+
+  const root = createRoot(parentElement as Element)
+
+  root.render(
+    <StrictMode>
+      <PDFViewer
+        file={data?.file}
+        height={typeof data?.height === "number" ? data.height : undefined}
+      />
+    </StrictMode>
+  )
+
+  return () => {
+    root.unmount()
+  }
+}
+
+export default ComponentEntry

@@ -49,8 +49,12 @@ def _raise_streamlit_required() -> None:
 
 
 if _STREAMLIT_AVAILABLE:
-    # Pre-registered in pyproject.toml; create callable for mounting
-    _component_func = st.components.v2.component(name="streamlit_pdf.pdf_viewer")
+    # Pre-registered in pyproject.toml; create callable for mounting with file-backed assets
+    _component_func = st.components.v2.component(
+        name="streamlit-pdf.pdf_viewer",
+        js="assets/index-*.js",
+        css="assets/index-*.css",
+    )
 else:
 
     def _component_func(**_kwargs):  # type: ignore
