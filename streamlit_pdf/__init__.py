@@ -31,12 +31,10 @@ _RELEASE = not _DEV
 # without Streamlit being present.
 try:
     import streamlit as st  # type: ignore
-    import streamlit.components.v1 as components  # type: ignore
 
     _STREAMLIT_AVAILABLE = True
 except Exception:  # pragma: no cover - only hits when Streamlit is absent
     st = None  # type: ignore
-    components = None  # type: ignore
     _STREAMLIT_AVAILABLE = False
 
 
@@ -50,30 +48,13 @@ def _raise_streamlit_required() -> None:
     )
 
 
-# Declare a Streamlit component for PDF viewing
-if not _RELEASE:
-    if _STREAMLIT_AVAILABLE:
-        _component_func = components.declare_component(
-            "pdf_viewer",
-            url="http://localhost:3001",
-        )
-    else:
-
-        def _component_func(**_kwargs):  # type: ignore
-            _raise_streamlit_required()
+if _STREAMLIT_AVAILABLE:
+    # Pre-registered in pyproject.toml; create callable for mounting
+    _component_func = st.components.v2.component(name="streamlit_pdf.pdf_viewer")
 else:
-    # When we're distributing a production version of the component, we'll
-    # replace the `url` param with `path`, and point it to the component's
-    # build directory:
-    parent_dir = os.path.dirname(os.path.abspath(__file__))
-    build_dir = os.path.join(parent_dir, "frontend/build")
 
-    if _STREAMLIT_AVAILABLE:
-        _component_func = components.declare_component("pdf_viewer", path=build_dir)
-    else:
-
-        def _component_func(**_kwargs):  # type: ignore
-            _raise_streamlit_required()
+    def _component_func(**_kwargs):  # type: ignore
+        _raise_streamlit_required()
 
 
 def pdf_viewer(
@@ -135,9 +116,14 @@ def pdf_viewer(
     # Process the file parameter
     processed_file = _process_file_input(file)
 
-    # Call the component function with processed arguments
+    # Mount the CCv2 component with data payload
     component_value = _component_func(
-        file=processed_file, height=height, key=key, default=None
+        key=key,
+        data={
+            "file": processed_file,
+            "height": height,
+        },
+        default=None,
     )
 
     return component_value

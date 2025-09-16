@@ -21,13 +21,9 @@ name = "streamlit-pdf"
 version = "1.0.7"
 description = "A Streamlit component for viewing PDF files"
 readme = "README.md"
-license = {text = "Apache-2.0"}
-authors = [
-    {name = "Snowflake Inc", email = "hello@streamlit.io"},
-]
-maintainers = [
-    {name = "Snowflake Inc", email = "hello@streamlit.io"},
-]
+license = { text = "Apache-2.0" }
+authors = [{ name = "Snowflake Inc", email = "hello@streamlit.io" }]
+maintainers = [{ name = "Snowflake Inc", email = "hello@streamlit.io" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -67,10 +63,7 @@ packages = ["streamlit_pdf"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-streamlit_pdf = [
-    "frontend/build/**/*",
-    "frontend/index.html",
-]
+streamlit_pdf = ["frontend/build/**/*", "frontend/index.html"]
 
 [tool.setuptools.exclude-package-data]
 streamlit_pdf = [
@@ -83,3 +76,7 @@ streamlit_pdf = [
     "frontend/vitest.config.ts",
     "frontend/.gitignore",
 ]
+
+[[tool.streamlit.component.components]]
+name = "streamlit_pdf.pdf_viewer"
+asset_dir = "streamlit_pdf/frontend/build"
