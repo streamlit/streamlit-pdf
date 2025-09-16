@@ -49,7 +49,6 @@ def _raise_streamlit_required() -> None:
 
 
 if _STREAMLIT_AVAILABLE:
-    # Pre-registered in pyproject.toml; create callable for mounting with file-backed assets
     _component_func = st.components.v2.component(
         name="streamlit-pdf.pdf_viewer",
         js="assets/index-*.js",
@@ -127,7 +126,6 @@ def pdf_viewer(
             "file": processed_file,
             "height": height,
         },
-        default=None,
     )
 
     return component_value
