@@ -169,8 +169,6 @@ function PDFViewer({
     }
   }, [updateContainerWidth])
 
-  // In CCv2, the component participates in the page layout directly. No iframe height to set.
-
   // Handle scroll events to hide zoom controls
   useEffect(() => {
     const handleScroll = () => {
