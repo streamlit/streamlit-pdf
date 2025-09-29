@@ -29,7 +29,7 @@ import { Document, Page, pdfjs } from "react-pdf"
 import styles from "./PdfViewer.module.css"
 import { mergeFileUrlWithStreamlitUrl } from "./urlUtils"
 
-type PdfViewerProps = {
+export type PdfViewerProps = {
   file?: string
   height?: number
 }
