@@ -125,7 +125,3 @@ cd streamlit_pdf/frontend && npm install
   ```
 
 ---
-
-```
-
-```
