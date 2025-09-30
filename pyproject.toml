@@ -56,7 +56,11 @@ devel = [
     "pytest-playwright-snapshot==1.0",
     "pytest-rerunfailures==12.0",
 ]
-with-streamlit = ["streamlit>=1.28.0"]
+with-streamlit = [
+    # Pin Streamlit and install the wheel via --find-links to use the local
+    # wheel
+    "streamlit==1.50.0",
+]
 
 [tool.setuptools]
 packages = ["streamlit_pdf"]

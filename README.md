@@ -108,13 +108,24 @@ Contributions are welcome 🚀, however, please inform us before building a feat
 
 ### Development flow
 
+Prerequisites:
+
 ```bash
-uv pip install -e .
-cd streamlit_pdf/frontend
-npm install
-npm run build
+uv pip install -e '.[with-streamlit]' --find-links .
+cd streamlit_pdf/frontend && npm install
 ```
 
-- You can watch the frontend changes by running `npm run watch` in the `streamlit_pdf/frontend` directory.
+- Build the frontend once:
+  ```bash
+  npm run build
+  ```
+- Or run the frontend in watch/development mode:
+  ```bash
+  npm run start
+  ```
 
 ---
+
+```
+
+```
