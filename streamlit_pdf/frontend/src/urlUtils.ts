@@ -23,26 +23,18 @@
 const BASE_MEDIA_PATH = "/media/"
 
 /**
- * For Custom Components v1, the Streamlit URL is passed as a query parameter in
- * the URL for the iframe.
+ * For Custom Components v2, read the current URL and return the origin and
+ * pathname.
  *
  * @returns The Streamlit URL or null if not found
  */
 const getStreamlitUrl = () => {
-  if (typeof window === "undefined") {
+  try {
+    const currentUrl = new URL(window.location.href)
+    return `${currentUrl.origin}${currentUrl.pathname}`
+  } catch {
     return null
   }
-
-  const search = window.location.search
-
-  if (!search) {
-    return null
-  }
-
-  const params = new URLSearchParams(search)
-  const streamlitUrl = params.get("streamlitUrl")
-
-  return streamlitUrl || null
 }
 
 /**
