@@ -67,7 +67,7 @@ packages = ["streamlit_pdf"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-streamlit_pdf = ["frontend/build/**/*", "frontend/index.html"]
+streamlit_pdf = ["frontend/build/**/*", "frontend/index.html", "pyproject.toml"]
 
 [tool.setuptools.exclude-package-data]
 streamlit_pdf = [
@@ -80,7 +80,3 @@ streamlit_pdf = [
     "frontend/vitest.config.ts",
     "frontend/.gitignore",
 ]
-
-[[tool.streamlit.component.components]]
-name = "pdf_viewer"
-asset_dir = "frontend/build"
