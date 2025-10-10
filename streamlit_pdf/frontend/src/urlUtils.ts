@@ -22,6 +22,14 @@
  */
 const BASE_MEDIA_PATH = "/media/"
 
+declare global {
+  interface Window {
+    __streamlit?: {
+      DOWNLOAD_ASSETS_BASE_URL?: string
+    }
+  }
+}
+
 /**
  * For Custom Components v1, the Streamlit URL is passed as a query parameter in
  * the URL for the iframe.
@@ -31,6 +39,10 @@ const BASE_MEDIA_PATH = "/media/"
 const getStreamlitUrl = () => {
   if (typeof window === "undefined") {
     return null
+  }
+
+  if (window.parent && window.parent.__streamlit?.DOWNLOAD_ASSETS_BASE_URL) {
+    return window.parent.__streamlit.DOWNLOAD_ASSETS_BASE_URL
   }
 
   const search = window.location.search

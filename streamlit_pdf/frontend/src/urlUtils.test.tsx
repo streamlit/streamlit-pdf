@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import { mergeFileUrlWithStreamlitUrl } from "./urlUtils"
 
@@ -144,6 +144,23 @@ describe("mergeFileUrlWithStreamlitUrl", () => {
     it("decodes and merges correctly", () => {
       expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
         "https://st-pdf.streamlit.app/~/+/media/file.pdf"
+      )
+    })
+  })
+
+  describe("with parent window __streamlit.DOWNLOAD_ASSETS_BASE_URL", () => {
+    afterEach(() => {
+      // Clean up the injected parent variable to avoid cross-test pollution
+      delete (window.parent as any).__streamlit
+    })
+
+    it("handles an overriden parent base URL", () => {
+      ;(window.parent as any).__streamlit = {
+        DOWNLOAD_ASSETS_BASE_URL: "https://foo.streamlit.app/bar/baz/_stcore/",
+      }
+
+      expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
+        "https://foo.streamlit.app/bar/baz/_stcore/media/file.pdf"
       )
     })
   })
