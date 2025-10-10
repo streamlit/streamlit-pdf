@@ -154,7 +154,7 @@ describe("mergeFileUrlWithStreamlitUrl", () => {
       delete (window.parent as any).__streamlit
     })
 
-    it("handles an overriden parent base URL", () => {
+    it("handles an overridden parent base URL", () => {
       ;(window.parent as any).__streamlit = {
         DOWNLOAD_ASSETS_BASE_URL: "https://foo.streamlit.app/bar/baz/_stcore/",
       }
