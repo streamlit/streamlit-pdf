@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { mergeFileUrlWithStreamlitUrl } from "./urlUtils"
 
@@ -24,14 +24,42 @@ const setSearch = (search: string) => {
   window.history.replaceState({}, "", url)
 }
 
+const setPath = (path: string) => {
+  window.history.replaceState({}, "", path)
+}
+
+const setWindowLocation = (url: string) => {
+  const u = new URL(url)
+  const loc: any = {
+    href: u.href,
+    origin: u.origin,
+    protocol: u.protocol,
+    host: u.host,
+    hostname: u.hostname,
+    port: u.port,
+    pathname: u.pathname,
+    search: u.search,
+    hash: u.hash,
+    assign: vi.fn(),
+    reload: vi.fn(),
+    replace: vi.fn(),
+    toString: () => u.href,
+  }
+  Object.defineProperty(window, "location", { value: loc, writable: true })
+}
+
 describe("mergeFileUrlWithStreamlitUrl", () => {
   beforeEach(() => {
     setSearch("")
   })
 
-  describe("with streamlitUrl in query", () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  describe("with current location at root", () => {
     beforeEach(() => {
-      setSearch("streamlitUrl=http://localhost:8501")
+      setWindowLocation("http://localhost:8501/")
     })
 
     it.each([
@@ -48,12 +76,7 @@ describe("mergeFileUrlWithStreamlitUrl", () => {
       expect(mergeFileUrlWithStreamlitUrl(url)).toBe(url)
     })
 
-    it.each([
-      "http://localhost:8501",
-      "http://localhost:8501/",
-      "http://localhost:8501///",
-    ])("merges base variant %s with media path", base => {
-      setSearch(`streamlitUrl=${base}`)
+    it("merges root base with media path", () => {
       expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
         "http://localhost:8501/media/file.pdf"
       )
@@ -72,73 +95,46 @@ describe("mergeFileUrlWithStreamlitUrl", () => {
     })
   })
 
-  describe("without streamlitUrl (no query)", () => {
+  describe("with unrelated query (still uses current location base)", () => {
     beforeEach(() => {
-      setSearch("")
+      setWindowLocation("http://localhost:8501/?foo=bar&baz=1")
     })
 
     it("returns media URL as-is", () => {
       const fileUrl = "/media/file.pdf"
-      expect(mergeFileUrlWithStreamlitUrl(fileUrl)).toBe(fileUrl)
-    })
-  })
-
-  describe("without streamlitUrl (unrelated query)", () => {
-    beforeEach(() => {
-      setSearch("foo=bar&baz=1")
-    })
-
-    it("returns media URL as-is", () => {
-      const fileUrl = "/media/file.pdf"
-      expect(mergeFileUrlWithStreamlitUrl(fileUrl)).toBe(fileUrl)
-    })
-  })
-
-  describe("with encoded streamlitUrl in query", () => {
-    beforeEach(() => {
-      const encoded = "streamlitUrl=http%3A%2F%2Flocalhost%3A8501%2F"
-      setSearch(encoded)
-    })
-
-    it("decodes and merges correctly", () => {
-      expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
+      expect(mergeFileUrlWithStreamlitUrl(fileUrl)).toBe(
         "http://localhost:8501/media/file.pdf"
-      )
-    })
-  })
-
-  describe("with encoded streamlitUrl from Community Cloud in query", () => {
-    beforeEach(() => {
-      const encoded =
-        "streamlitUrl=https%3A%2F%2Fst-pdf.streamlit.app%2F~%2F%2B%2F"
-      setSearch(encoded)
-    })
-
-    it("decodes and merges correctly", () => {
-      expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
-        "https://st-pdf.streamlit.app/~/+/media/file.pdf"
       )
     })
   })
 
   describe("Multipage apps locally", () => {
     beforeEach(() => {
-      const encoded = "streamlitUrl=http%3A%2F%2Flocalhost%3A8501%2FPDF_Viewer"
-      setSearch(encoded)
+      setWindowLocation("http://localhost:8501/PDF_Viewer")
     })
 
-    it("decodes and merges correctly", () => {
+    it("drops page slug and merges correctly", () => {
       expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
         "http://localhost:8501/media/file.pdf"
       )
     })
   })
 
+  describe("Base path with Community Cloud prefix", () => {
+    beforeEach(() => {
+      setWindowLocation("https://st-pdf.streamlit.app/~/+/")
+    })
+
+    it("anchors media at the app base path", () => {
+      expect(mergeFileUrlWithStreamlitUrl("/media/file.pdf")).toBe(
+        "https://st-pdf.streamlit.app/~/+/media/file.pdf"
+      )
+    })
+  })
+
   describe("Multipage apps in Community Cloud", () => {
     beforeEach(() => {
-      const encoded =
-        "streamlitUrl=https%3A%2F%2Fst-pdf.streamlit.app%2F~%2F%2B%2FPDF_Viewer"
-      setSearch(encoded)
+      setWindowLocation("https://st-pdf.streamlit.app/~/+/Upload_PDF")
     })
 
     it("decodes and merges correctly", () => {

@@ -87,7 +87,7 @@ vi.mock("react-pdf", () => ({
 }))
 
 describe("PdfViewer", () => {
-  const defaultArgs = {
+  const defaultProps: PdfViewerProps = {
     file: "data:application/pdf;base64,JVBERi0xLjUKJeLjz9M=",
     height: 600,
   }
@@ -100,8 +100,6 @@ describe("PdfViewer", () => {
     primaryColor: "#0068c9",
     font: "sans-serif",
   }
-
-  const defaultProps: PdfViewerProps = {}
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -120,7 +118,7 @@ describe("PdfViewer", () => {
   })
 
   it("shows no file message when file is not provided", () => {
-    render(<PdfViewer {...defaultProps} />)
+    render(<PdfViewer {...defaultProps} file={undefined} />)
     expect(screen.getByText("No PDF file provided")).toBeVisible()
     expect(
       screen.getByText("Please provide a PDF file to display")
@@ -148,9 +146,9 @@ describe("PdfViewer", () => {
 
   it("applies custom height", () => {
     const customHeight = 800
-    const customProps = {
+    const customProps: PdfViewerProps = {
       ...defaultProps,
-      args: { ...defaultArgs, height: customHeight },
+      height: customHeight,
     }
     render(<PdfViewer {...customProps} />)
 

@@ -19,6 +19,7 @@
     "format": "prettier --write src/**/*.{ts,tsx,css} vite.config.ts",
     "test:coverage": "vitest --coverage",
     "test:ui": "vitest --ui",
+    "test:watch": "vitest --watch",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
