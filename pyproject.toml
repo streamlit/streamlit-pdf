@@ -63,7 +63,7 @@ packages = ["streamlit_pdf"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-streamlit_pdf = ["frontend/build/**/*", "frontend/index.html", "pyproject.toml"]
+streamlit_pdf = ["frontend/build/**/*", "pyproject.toml"]
 
 [tool.setuptools.exclude-package-data]
 streamlit_pdf = [

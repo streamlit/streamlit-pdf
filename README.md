@@ -121,7 +121,7 @@ cd streamlit_pdf/frontend && npm install
   ```
 - Or run the frontend in watch/development mode:
   ```bash
-  npm run start
+  npm run dev
   ```
 
 ---

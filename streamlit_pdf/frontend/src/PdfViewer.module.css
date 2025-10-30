@@ -244,7 +244,7 @@
 }
 
 .zoomButton:focus {
-  box-shadow: 0 0 0 2px var(--st-primary-color);
+  box-shadow: 0 0 2px 2px var(--st-primary-color);
 }
 
 .zoomButton:focus:not(:focus-visible) {
