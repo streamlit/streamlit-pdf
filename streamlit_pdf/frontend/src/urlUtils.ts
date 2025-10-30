@@ -22,6 +22,14 @@
  */
 const BASE_MEDIA_PATH = "/media/"
 
+declare global {
+  interface Window {
+    __streamlit?: {
+      DOWNLOAD_ASSETS_BASE_URL?: string
+    }
+  }
+}
+
 /**
  * For Custom Components v2, read the current URL and return the origin and
  * pathname.
@@ -29,6 +37,14 @@ const BASE_MEDIA_PATH = "/media/"
  * @returns The Streamlit URL or null if not found
  */
 const getStreamlitUrl = () => {
+  if (typeof window === "undefined") {
+    return null
+  }
+
+  if (window.parent?.__streamlit?.DOWNLOAD_ASSETS_BASE_URL) {
+    return window.parent.__streamlit.DOWNLOAD_ASSETS_BASE_URL
+  }
+
   try {
     const currentUrl = new URL(window.location.href)
     return `${currentUrl.origin}${currentUrl.pathname}`
