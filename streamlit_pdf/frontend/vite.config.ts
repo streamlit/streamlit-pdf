@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { defineConfig, loadEnv, UserConfig } from "vite"
-import react from "@vitejs/plugin-react-swc"
-import { viteStaticCopy } from "vite-plugin-static-copy"
+import react from "@vitejs/plugin-react"
 import { createRequire } from "node:module"
 import path from "node:path"
+import process from "node:process"
+import { defineConfig, UserConfig } from "vite"
+import { viteStaticCopy } from "vite-plugin-static-copy"
 
 const require = createRequire(import.meta.url)
 
@@ -28,9 +29,8 @@ const require = createRequire(import.meta.url)
  * @see https://vitejs.dev/config/ for complete Vite configuration options
  */
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd())
-
-  const port = env.VITE_PORT ? parseInt(env.VITE_PORT) : 3001
+  const isProd = process.env.NODE_ENV === "production"
+  const isDev = !isProd
 
   // Get the path to pdfjs-dist
   const pdfjsDistPath = path.dirname(require.resolve("pdfjs-dist/package.json"))
@@ -56,19 +56,15 @@ export default defineConfig(({ mode }) => {
         ],
       }),
     ],
-    server: {
-      port,
-    },
     define: {
-      "process.env.NODE_ENV": JSON.stringify(
-        mode === "production" ? "production" : "development"
-      ),
-      "process.env": JSON.stringify({}),
+      // We are building in library mode, we need to define the NODE_ENV
+      // variable to prevent issues when executing the JS.
+      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
     },
     build: {
+      minify: isDev ? false : "esbuild",
       outDir: "build",
-      // TODO: Put this behind a flag
-      sourcemap: true,
+      sourcemap: isDev,
       assetsDir: "assets",
       copyPublicDir: true,
       cssCodeSplit: false,

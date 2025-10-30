@@ -14,16 +14,8 @@
 # limitations under the License.
 
 import io
-import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
-
-# Create a _RELEASE constant. We'll set this to False while we're developing
-# the component, and True when we're ready to package and distribute it.
-# (This is, of course, optional - there are innumerable ways to manage your
-# release process.)
-_DEV = os.environ.get("DEV", False)
-_RELEASE = not _DEV
 
 # Streamlit is an optional runtime dependency. We avoid importing it at module import
 # time so that simply importing this package does not require Streamlit to be
@@ -53,6 +45,7 @@ if _STREAMLIT_AVAILABLE:
         name="streamlit-pdf.pdf_viewer",
         js="assets/index-*.js",
         css="assets/index-*.css",
+        html='<div class="react-root"></div>',
     )
 else:
 

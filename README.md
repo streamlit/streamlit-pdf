@@ -111,7 +111,7 @@ Contributions are welcome 🚀, however, please inform us before building a feat
 Prerequisites:
 
 ```bash
-uv pip install -e '.[with-streamlit]' --find-links .
+uv pip install -e '.[with-streamlit]' .
 cd streamlit_pdf/frontend && npm install
 ```
 

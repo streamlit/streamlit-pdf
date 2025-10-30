@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@streamlit/component-v2-lib": "file:streamlit-component-v2-lib-0.1.0.tgz",
+    "@streamlit/component-v2-lib": "^0.1.0",
     "@tanstack/react-virtual": "^3.13.12",
     "pdfjs-dist": "5.3.31",
     "react": "^18.3.1",
@@ -13,12 +13,14 @@
     "react-pdf": "^10.0.1"
   },
   "scripts": {
-    "start": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run clean && npm run typecheck && NODE_ENV=production vite build",
+    "clean": "rm -rf build",
+    "dev": "NODE_ENV=development vite build --watch",
     "format": "prettier --write src/**/*.{ts,tsx,css}",
-    "test": "vitest run",
+    "test:coverage": "vitest --coverage",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -43,7 +45,7 @@
     "@types/node": "^22.14.1",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
-    "@vitejs/plugin-react-swc": "^3.9.0",
+    "@vitejs/plugin-react": "^5.1.0",
     "@vitest/ui": "^3.2.4",
     "jsdom": "^26.1.0",
     "license-checker-rseidelsohn": "^4.4.2",
