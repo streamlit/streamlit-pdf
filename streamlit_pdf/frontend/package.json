@@ -16,7 +16,7 @@
     "build": "npm run clean && npm run typecheck && NODE_ENV=production vite build",
     "clean": "rm -rf build",
     "dev": "NODE_ENV=development vite build --watch",
-    "format": "prettier --write src/**/*.{ts,tsx,css}",
+    "format": "prettier --write src/**/*.{ts,tsx,css} vite.config.ts",
     "test:coverage": "vitest --coverage",
     "test:ui": "vitest --ui",
     "test": "vitest run",
