@@ -34,9 +34,26 @@ export type PdfViewerProps = {
   height?: number
 }
 
-// Configure PDF.js worker to use local file
-// In Streamlit components, files are served from the same origin
-pdfjs.GlobalWorkerOptions.workerSrc = `${import.meta.env.BASE_URL}workers/pdf.worker.min.mjs`
+/**
+ * Configure the PDF.js worker location.
+ *
+ * Why module-relative URLs?
+ * - We copy the worker file during the build step via `vite-plugin-static-copy`
+ *   into the component's output alongside our JS bundle. Using
+ *   `new URL(path, import.meta.url)` makes the URL resilient to the final
+ *   mount point (e.g., Streamlit Community Cloud base path, multipage apps),
+ *   since it resolves relative to the built JS file instead of the document
+ *   location or `BASE_URL`.
+ *
+ * Why the `@vite-ignore`?
+ * - The asset is not present in the source tree (it's copied at build time),
+ *   so Vite cannot statically resolve it. We intentionally keep this URL to be
+ *   resolved at runtime after the files are copied, and silence the warning.
+ */
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  /* @vite-ignore */ "./workers/pdf.worker.min.mjs",
+  import.meta.url
+).toString()
 
 // Zoom control constants
 const MIN_ZOOM = 0.5
@@ -83,12 +100,26 @@ function PDFViewer({
 
   const isHoveringRef = useRef<boolean>(false)
 
-  // Memoize PDF.js options to prevent unnecessary re-renders
+  /**
+   * Memoize PDF.js options to prevent unnecessary re-renders
+   * PDF.js auxiliary assets (character maps and standard fonts).
+   *
+   * These directories are also copied by `vite-plugin-static-copy` into the
+   * build output next to our JS bundle. We resolve them relative to the built
+   * module for the same reasons as the worker (robust across base paths), and
+   * use `@vite-ignore` to avoid build-time resolution warnings.
+   */
   const pdfOptions = useMemo(
     () => ({
-      cMapUrl: `${import.meta.env.BASE_URL}cmaps/`,
+      cMapUrl: new URL(
+        /* @vite-ignore */ "./cmaps/",
+        import.meta.url
+      ).toString(),
       cMapPacked: true,
-      standardFontDataUrl: `${import.meta.env.BASE_URL}standard_fonts/`,
+      standardFontDataUrl: new URL(
+        /* @vite-ignore */ "./standard_fonts/",
+        import.meta.url
+      ).toString(),
     }),
     []
   )
