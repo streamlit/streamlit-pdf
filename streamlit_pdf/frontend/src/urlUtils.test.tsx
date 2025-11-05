@@ -30,7 +30,7 @@ const setPath = (path: string) => {
 
 const setWindowLocation = (url: string) => {
   const u = new URL(url)
-  const loc: any = {
+  const loc: Partial<Location> = {
     href: u.href,
     origin: u.origin,
     protocol: u.protocol,
