@@ -95,7 +95,9 @@ function PDFViewer({
 
   const contentRef = useRef<HTMLDivElement>(null)
   const documentContainerRef = useRef<HTMLDivElement>(null)
-  const inactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const inactivityTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  )
   const containerRef = useRef<HTMLDivElement>(null)
 
   const isHoveringRef = useRef<boolean>(false)

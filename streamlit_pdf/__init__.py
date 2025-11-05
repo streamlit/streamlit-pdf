@@ -113,7 +113,7 @@ def pdf_viewer(
     processed_file = _process_file_input(file)
 
     # Mount the CCv2 component with data payload
-    component_value = _component_func(
+    _component_func(
         key=key,
         data={
             "file": processed_file,
@@ -121,7 +121,7 @@ def pdf_viewer(
         },
     )
 
-    return component_value
+    return None
 
 
 def _process_file_input(

@@ -19,7 +19,6 @@ import pytest
 from e2e_utils import StreamlitRunner
 from playwright.sync_api import Page, expect
 
-ROOT_DIRECTORY = Path(__file__).parent.parent.absolute()
 PDF_VIEWER_FILE = Path(__file__).parent / "pdf_viewer.py"
 
 
