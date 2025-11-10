@@ -140,14 +140,14 @@ describe("mergeFileUrlWithStreamlitUrl", () => {
     })
   })
 
-  describe("with parent window __streamlit.DOWNLOAD_ASSETS_BASE_URL", () => {
+  describe("with window.__streamlit.DOWNLOAD_ASSETS_BASE_URL", () => {
     afterEach(() => {
-      // Clean up the injected parent variable to avoid cross-test pollution
-      delete (window.parent as any).__streamlit
+      // Clean up the injected variable to avoid cross-test pollution
+      delete window.__streamlit
     })
 
-    it("handles an overridden parent base URL", () => {
-      ;(window.parent as any).__streamlit = {
+    it("handles an overridden base URL", () => {
+      window.__streamlit = {
         DOWNLOAD_ASSETS_BASE_URL: "https://foo.streamlit.app/bar/baz/_stcore/",
       }
 

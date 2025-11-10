@@ -41,8 +41,8 @@ const getStreamlitUrl = () => {
     return null
   }
 
-  if (window.parent?.__streamlit?.DOWNLOAD_ASSETS_BASE_URL) {
-    return window.parent.__streamlit.DOWNLOAD_ASSETS_BASE_URL
+  if (window?.__streamlit?.DOWNLOAD_ASSETS_BASE_URL) {
+    return window.__streamlit.DOWNLOAD_ASSETS_BASE_URL
   }
 
   try {

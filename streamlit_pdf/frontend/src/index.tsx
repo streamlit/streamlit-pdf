@@ -23,7 +23,6 @@ import type {
 import { StrictMode } from "react"
 import { createRoot, Root } from "react-dom/client"
 import PDFViewer from "./PdfViewer"
-import "./index.css"
 
 interface ViewerState extends ComponentState {
   numPages?: number
