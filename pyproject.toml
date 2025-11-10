@@ -21,13 +21,13 @@ name = "streamlit-pdf"
 version = "1.0.8"
 description = "A Streamlit component for viewing PDF files"
 readme = "README.md"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICES"]
 authors = [{ name = "Snowflake Inc", email = "hello@streamlit.io" }]
 maintainers = [{ name = "Snowflake Inc", email = "hello@streamlit.io" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -59,13 +59,31 @@ devel = [
 with-streamlit = ["streamlit>=1.51.0"]
 
 [tool.setuptools]
-packages = ["streamlit_pdf"]
+# Ship built frontend assets (via package-data) alongside Python modules.
 include-package-data = true
 
+# Explicitly list frontend build dirs as "packages" to suppress setuptools
+# warnings about "importable" directories not present in `packages`. These are
+# asset-only namespaces produced by the frontend build, not Python code, but
+# setuptools currently treats any directory as importable. Declaring them avoids
+# noisy warnings while still relying on package-data to actually include files.
+packages = [
+    "streamlit_pdf",
+    "streamlit_pdf.frontend.build",
+    "streamlit_pdf.frontend.build.assets",
+    "streamlit_pdf.frontend.build.assets.cmaps",
+    "streamlit_pdf.frontend.build.assets.standard_fonts",
+    "streamlit_pdf.frontend.build.assets.workers",
+]
+
 [tool.setuptools.package-data]
+# Include all built frontend assets in the distribution. This is what the
+# Streamlit component serves at runtime.
 streamlit_pdf = ["frontend/build/**/*", "pyproject.toml"]
 
 [tool.setuptools.exclude-package-data]
+# Exclude dev-only frontend sources and tooling from the distribution to keep
+# wheels lean and avoid shipping unnecessary or large files.
 streamlit_pdf = [
     "frontend/node_modules/**/*",
     "frontend/src/**/*",
