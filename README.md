@@ -111,6 +111,8 @@ Contributions are welcome 🚀, however, please inform us before building a feat
 Prerequisites:
 
 ```bash
+uv venv .venv
+source .venv/bin/activate
 uv pip install -e '.[with-streamlit]' .
 cd streamlit_pdf/frontend && npm install
 ```
