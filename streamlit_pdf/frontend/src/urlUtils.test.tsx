@@ -24,10 +24,6 @@ const setSearch = (search: string) => {
   window.history.replaceState({}, "", url)
 }
 
-const setPath = (path: string) => {
-  window.history.replaceState({}, "", path)
-}
-
 const setWindowLocation = (url: string) => {
   const u = new URL(url)
   const loc: Partial<Location> = {
