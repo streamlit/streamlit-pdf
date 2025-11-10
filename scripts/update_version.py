@@ -15,7 +15,12 @@
 
 """
 Script to update version numbers across the streamlit-pdf project.
-Updates version in pyproject.toml, package.json, and test requirements.
+
+Updates version in:
+- Top-level pyproject.toml
+- Package pyproject (streamlit_pdf/pyproject.toml)
+- frontend/package.json
+- e2e_playwright/test-requirements.txt (wheel filename)
 """
 
 import json
@@ -25,18 +30,23 @@ import sys
 from pathlib import Path
 
 
-def update_pyproject_toml(version: str, project_root: Path) -> None:
-    """Update version in pyproject.toml"""
-    pyproject_file = project_root / "pyproject.toml"
-    content = pyproject_file.read_text()
+def update_pyproject_files(version: str, project_root: Path) -> None:
+    """Update version in both pyproject.toml files (root and package)."""
+    pyproject_paths = [
+        project_root / "pyproject.toml",
+        project_root / "streamlit_pdf" / "pyproject.toml",
+    ]
 
-    # Update version line
-    updated_content = re.sub(
-        r'^version = ".*"', f'version = "{version}"', content, flags=re.MULTILINE
-    )
+    for pyproject_file in pyproject_paths:
+        content = pyproject_file.read_text()
 
-    pyproject_file.write_text(updated_content)
-    print(f"✅ Updated pyproject.toml: {version}")
+        # Update version line (allow arbitrary whitespace)
+        updated_content = re.sub(
+            r'(?m)^version\s*=\s*"[^"]*"', f'version = "{version}"', content
+        )
+
+        pyproject_file.write_text(updated_content)
+        print(f"✅ Updated {pyproject_file.relative_to(project_root)}: {version}")
 
 
 def update_package_json(version: str, project_root: Path) -> None:
@@ -139,7 +149,7 @@ def main():
         print(f"🔄 Updating version from {current_version} to {new_version}")
 
         # Update all files
-        update_pyproject_toml(new_version, project_root)
+        update_pyproject_files(new_version, project_root)
         update_package_json(new_version, project_root)
         update_test_requirements(new_version, project_root)
 

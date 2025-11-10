@@ -31,8 +31,8 @@ declare global {
 }
 
 /**
- * For Custom Components v1, the Streamlit URL is passed as a query parameter in
- * the URL for the iframe.
+ * For Custom Components v2, read the current URL and return the origin and
+ * pathname.
  *
  * @returns The Streamlit URL or null if not found
  */
@@ -41,59 +41,51 @@ const getStreamlitUrl = () => {
     return null
   }
 
-  if (window.parent?.__streamlit?.DOWNLOAD_ASSETS_BASE_URL) {
-    return window.parent.__streamlit.DOWNLOAD_ASSETS_BASE_URL
+  if (window?.__streamlit?.DOWNLOAD_ASSETS_BASE_URL) {
+    return window.__streamlit.DOWNLOAD_ASSETS_BASE_URL
   }
 
-  const search = window.location.search
-
-  if (!search) {
+  try {
+    const currentUrl = new URL(window.location.href)
+    return `${currentUrl.origin}${currentUrl.pathname}`
+  } catch {
     return null
   }
-
-  const params = new URLSearchParams(search)
-  const streamlitUrl = params.get("streamlitUrl")
-
-  return streamlitUrl || null
 }
 
 /**
- * Merges a Streamlit-served media path with the Streamlit app base URL from the
- * current page's query string (the `streamlitUrl` parameter).
+ * Merges a Streamlit-served media path with the Streamlit app base URL.
  *
- * Why this is important:
- * - Streamlit serves media from an app-level endpoint, not a page-level path.
- *   In multipage apps the `streamlitUrl` may include the active page slug
- *   (e.g., `/Some_Page`). Naively appending `/media/...` produces
- *   `/Some_Page/media/...`, which does not exist. We anchor media at the app
- *   base by trimming only the last segment when needed, so URLs remain valid
- *   regardless of the current page.
- * - The function is resilient to odd inputs (extra slashes) and does not alter
- *   absolute/external URLs.
+ * Source of truth for the base URL:
+ * - If available, uses `window.__streamlit.DOWNLOAD_ASSETS_BASE_URL` as the app
+ *   base.
+ * - Otherwise, derives the base from the current window location
+ *   (`window.location`), using the origin plus an app-level base path derived
+ *   from the pathname:
+ *   - If the pathname ends with `/`, it is used as-is.
+ *   - Otherwise, the last path segment (e.g., a multipage slug) is dropped and
+ *     the prefix is kept.
  *
- * Behavior:
+ * Normalization and behavior:
  * - If `fileUrl` is `undefined`, returns `undefined`.
- * - If `fileUrl` does not start with `/media/` (after collapsing any leading
- *   slashes), returns `fileUrl` unchanged.
- * - If no `streamlitUrl` query parameter is present, returns `fileUrl`
- *   unchanged.
- * - When merging, the function:
- *   - Parses the `streamlitUrl`.
- *   - Derives an app base path from its pathname:
- *     - If the pathname ends with `/`, use it as-is.
- *     - Otherwise, drop the last path segment (e.g., a multipage slug) and keep
- *       the prefix.
- *   - Normalizes the base path by collapsing duplicate slashes and ensuring a
- *     single leading slash and a trailing slash (except when the base is just `/`).
- *   - Joins `${origin}${basePath}` with the normalized media path to form the
- *     absolute media URL.
- * - Inputs like `///media/file.pdf` are normalized and treated as media paths.
+ * - If `fileUrl` does not start with `/media/` (after collapsing leading
+ *   slashes), returns `fileUrl` unchanged (absolute/external URLs are not
+ *   modified).
+ * - When merging, the base path is normalized by collapsing duplicate slashes,
+ *   ensuring a single leading slash and a trailing slash (except when the base
+ *   is just `/`). Inputs like `///media/file.pdf` are normalized and treated as
+ *   media paths.
+ * - The final URL is `${origin}${normalizedBasePath}${normalizedMediaPath}`.
+ * - If the parent-provided base is malformed, a conservative fallback replaces
+ *   trailing slashes in the base and prefixes the normalized media path.
  *
  * Examples:
- * - `?streamlitUrl=http://localhost:8501` + `/media/file.pdf` →
+ * - Current location `http://localhost:8501/` + `/media/file.pdf` →
  *   `http://localhost:8501/media/file.pdf`.
- * - `?streamlitUrl=http://localhost:8501/Some_Page` + `/media/file.pdf` →
+ * - Current location `http://localhost:8501/Some_Page` + `/media/file.pdf` →
  *   `http://localhost:8501/media/file.pdf` (drops the page segment).
+ * - Parent base `https://foo.streamlit.app/bar/baz/_stcore/` + `/media/file.pdf` →
+ *   `https://foo.streamlit.app/bar/baz/_stcore/media/file.pdf`.
  * - `mergeFileUrlWithStreamlitUrl("https://cdn.example.com/file.pdf")` → unchanged.
  *
  * @param fileUrl The input file URL or path. May be absolute or a `/media/`-relative path.

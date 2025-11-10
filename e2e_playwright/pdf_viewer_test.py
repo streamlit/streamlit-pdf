@@ -16,22 +16,17 @@
 from pathlib import Path
 
 import pytest
+from e2e_utils import StreamlitRunner
 from playwright.sync_api import Page, expect
 
-from e2e_utils import StreamlitRunner
-
-ROOT_DIRECTORY = Path(__file__).parent.parent.absolute()
 PDF_VIEWER_FILE = Path(__file__).parent / "pdf_viewer.py"
 
 
 def _wait_for_pdf_content_ready(page: Page, timeout: int = 10000):
-    """Wait for PDF content to actually load by checking iframe content."""
-    # Get the PDF frame
-    pdf_frame = page.frame_locator('iframe[title="streamlit_pdf\\.pdf_viewer"]')
-
+    """Wait for PDF content to actually load by checking document container."""
     try:
         # Wait for the PDF document container to be visible with custom timeout
-        pdf_frame.get_by_test_id("pdf-document-container").wait_for(
+        page.get_by_test_id("pdf-document-container").wait_for(
             state="visible", timeout=timeout
         )
     except Exception:
@@ -72,12 +67,8 @@ def test_pdf_viewer_renders(page: Page):
     # Check that the title is present
     expect(page.get_by_role("heading", name="📄 PDF Viewer Component")).to_be_visible()
 
-    # The first option (Bytes) should be selected by default
-    # Check that the PDF viewer iframe is present
-    pdf_frame = page.frame_locator('iframe[title="streamlit_pdf\\.pdf_viewer"]')
-
-    # The PDF viewer should be visible within the iframe
-    expect(pdf_frame.get_by_test_id("pdf-container")).to_be_visible()
+    # The PDF viewer container should be visible
+    expect(page.get_by_test_id("pdf-container")).to_be_visible()
 
 
 def test_pdf_viewer_height_control(page: Page):
@@ -107,21 +98,17 @@ def test_pdf_viewer_height_control(page: Page):
     page.wait_for_load_state("domcontentloaded")
 
     # Verify the PDF viewer is still visible after changes
-    pdf_frame = page.frame_locator('iframe[title="streamlit_pdf\\.pdf_viewer"]')
-    expect(pdf_frame.get_by_test_id("pdf-container")).to_be_visible()
+    expect(page.get_by_test_id("pdf-container")).to_be_visible()
 
 
 def test_pdf_viewer_displays_pdf(page: Page):
     """Test that the PDF viewer actually displays PDF content."""
-    # Check the PDF viewer iframe
-    pdf_frame = page.frame_locator('iframe[title="streamlit_pdf\\.pdf_viewer"]')
-
     # Wait for PDF to start loading with better conditions
-    expect(pdf_frame.get_by_test_id("pdf-container")).to_be_visible()
+    expect(page.get_by_test_id("pdf-container")).to_be_visible()
 
     # Check if there's an error state
     try:
-        error_container = pdf_frame.get_by_test_id("pdf-error")
+        error_container = page.get_by_test_id("pdf-error")
         error_container.wait_for(state="visible")
         error_text = error_container.text_content()
         # If error is visible, the test should fail
@@ -143,15 +130,14 @@ def test_pdf_viewer_responsive(page: Page):
     page.set_viewport_size({"width": 1200, "height": 800})
 
     # Check PDF viewer is visible
-    pdf_frame = page.frame_locator('iframe[title="streamlit_pdf\\.pdf_viewer"]')
-    expect(pdf_frame.get_by_test_id("pdf-container")).to_be_visible()
+    expect(page.get_by_test_id("pdf-container")).to_be_visible()
 
     # Change viewport to mobile size
     page.set_viewport_size({"width": 375, "height": 667})
     page.wait_for_load_state("domcontentloaded")
 
     # Check PDF viewer is still visible and responsive
-    expect(pdf_frame.get_by_test_id("pdf-container")).to_be_visible()
+    expect(page.get_by_test_id("pdf-container")).to_be_visible()
 
 
 def _test_pdf_viewer_with_selectbox(
@@ -182,14 +168,12 @@ def _test_pdf_viewer_with_selectbox(
         _wait_for_pdf_content_ready(page)
 
     # Since we're using a single PDF viewer, we can directly locate it
-    pdf_frame = page.frame_locator('iframe[title="streamlit_pdf\\.pdf_viewer"]')
-
     # Wait for PDF to start loading
-    expect(pdf_frame.get_by_test_id("pdf-container")).to_be_visible()
+    expect(page.get_by_test_id("pdf-container")).to_be_visible()
 
     # Check if there's an error state with shorter timeout to avoid hanging
     try:
-        error_container = pdf_frame.get_by_test_id("pdf-error")
+        error_container = page.get_by_test_id("pdf-error")
         error_container.wait_for(state="visible", timeout=2000)
         error_text = error_container.text_content()
         assert False, f"PDF failed to load for {option_name}: {error_text}"
@@ -200,11 +184,11 @@ def _test_pdf_viewer_with_selectbox(
     # For Data URI, we've already waited for the document container above
     # For other types, wait for the document container to appear
     if option_name != "Data URI":
-        expect(pdf_frame.get_by_test_id("pdf-document-container")).to_be_visible()
+        expect(page.get_by_test_id("pdf-document-container")).to_be_visible()
 
     # Check for actual PDF content (canvas elements)
     try:
-        canvas = pdf_frame.locator("canvas").first
+        canvas = page.locator("canvas").first
         expect(canvas).to_be_visible()
     except Exception:
         pass
@@ -253,22 +237,19 @@ def test_pdf_viewer_selectbox_renders_properly(page: Page):
     selectbox.locator('div[data-baseweb="select"] input').click()
     page.get_by_role("option", name="Path", exact=True).click()
 
-    # Check the PDF viewer iframe
-    pdf_frame = page.frame_locator('iframe[title="streamlit_pdf\\.pdf_viewer"]')
-
     # Check if container exists
-    expect(pdf_frame.get_by_test_id("pdf-container")).to_be_visible()
+    expect(page.get_by_test_id("pdf-container")).to_be_visible()
 
     # Now check if actual PDF pages are rendered
     # Look for page elements that would only exist if PDF is actually rendered
     pdf_pages_visible = False
     try:
         # Check for actual PDF page elements (not just containers)
-        pdf_page = pdf_frame.locator('[data-page-number="1"]').first
+        pdf_page = page.locator('[data-page-number="1"]').first
         pdf_page.wait_for(state="visible")
 
         # Check if the page has actual content (canvas or similar)
-        canvas = pdf_frame.locator("canvas").first
+        canvas = page.locator("canvas").first
         canvas.wait_for(state="visible")
         pdf_pages_visible = True
     except Exception:
@@ -293,7 +274,7 @@ def test_pdf_viewer_selectbox_renders_properly(page: Page):
 
         # Check again if PDF is now rendered
         try:
-            canvas = pdf_frame.locator("canvas").first
+            canvas = page.locator("canvas").first
             canvas.wait_for(state="visible")
             pdf_pages_visible = True
         except Exception:
@@ -306,20 +287,18 @@ def test_pdf_viewer_selectbox_renders_properly(page: Page):
 def test_pdf_viewer_actual_content_visible(page: Page):
     """Test that verifies actual PDF content is rendered, not just container elements."""
     # The default selection should work
-    pdf_frame = page.frame_locator('iframe[title="streamlit_pdf\\.pdf_viewer"]')
-
     # Wait for container
-    expect(pdf_frame.get_by_test_id("pdf-container")).to_be_visible()
+    expect(page.get_by_test_id("pdf-container")).to_be_visible()
 
     # Now check for actual rendered content
     # PDF.js renders pages as canvas elements
     try:
         # Wait for at least one canvas element (rendered PDF page)
-        canvas = pdf_frame.locator("canvas").first
+        canvas = page.locator("canvas").first
         expect(canvas).to_be_visible()
 
         # Also check for page container with page number
-        page_container = pdf_frame.locator('[data-page-number="1"]').first
+        page_container = page.locator('[data-page-number="1"]').first
         expect(page_container).to_be_visible()
 
     except Exception as e:

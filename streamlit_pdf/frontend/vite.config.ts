@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { defineConfig, loadEnv, UserConfig } from "vite"
-import react from "@vitejs/plugin-react-swc"
-import { viteStaticCopy } from "vite-plugin-static-copy"
+import react from "@vitejs/plugin-react"
 import { createRequire } from "node:module"
 import path from "node:path"
+import process from "node:process"
+import { defineConfig, UserConfig } from "vite"
+import { viteStaticCopy } from "vite-plugin-static-copy"
 
 const require = createRequire(import.meta.url)
 
@@ -28,12 +29,11 @@ const require = createRequire(import.meta.url)
  * @see https://vitejs.dev/config/ for complete Vite configuration options
  */
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd())
-
-  const port = env.VITE_PORT ? parseInt(env.VITE_PORT) : 3001
+  const isProd = process.env.NODE_ENV === "production"
+  const isDev = !isProd
 
   // Get the path to pdfjs-dist
-  const pdfjsDistPath = path.dirname(require.resolve('pdfjs-dist/package.json'))
+  const pdfjsDistPath = path.dirname(require.resolve("pdfjs-dist/package.json"))
 
   return {
     base: "./",
@@ -42,27 +42,50 @@ export default defineConfig(({ mode }) => {
       viteStaticCopy({
         targets: [
           {
-            src: path.join(pdfjsDistPath, 'build', 'pdf.worker.min.mjs'),
-            dest: 'workers'
+            src: path.join(pdfjsDistPath, "build", "pdf.worker.min.mjs"),
+            dest: "assets/workers",
           },
           {
-            src: path.join(pdfjsDistPath, 'cmaps/*'),
-            dest: 'cmaps'
+            src: path.join(pdfjsDistPath, "cmaps/*"),
+            dest: "assets/cmaps",
           },
           {
-            src: path.join(pdfjsDistPath, 'standard_fonts/*'),
-            dest: 'standard_fonts'
-          }
-        ]
-      })
+            src: path.join(pdfjsDistPath, "standard_fonts/*"),
+            dest: "assets/standard_fonts",
+          },
+        ],
+      }),
     ],
-    server: {
-      port,
+    define: {
+      // We are building in library mode, we need to define the NODE_ENV
+      // variable to prevent issues when executing the JS.
+      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
     },
     build: {
+      minify: isDev ? false : "esbuild",
       outDir: "build",
+      sourcemap: isDev,
       assetsDir: "assets",
       copyPublicDir: true,
+      cssCodeSplit: false,
+      lib: {
+        entry: path.resolve(__dirname, "src/index.tsx"),
+        formats: ["es"],
+        fileName: () => "assets/index-[hash].js",
+      },
+      rollupOptions: {
+        output: {
+          entryFileNames: "assets/index-[hash].js",
+          chunkFileNames: "assets/chunk-[hash].js",
+          assetFileNames: assetInfo => {
+            const name = assetInfo.name || "asset"
+            if (name.endsWith(".css")) {
+              return "assets/index-[hash][extname]"
+            }
+            return "assets/[name]-[hash][extname]"
+          },
+        },
+      },
     },
     publicDir: "public",
   } satisfies UserConfig

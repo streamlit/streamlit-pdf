@@ -15,31 +15,45 @@
  * limitations under the License.
  */
 
-import {
-  Streamlit,
-  withStreamlitConnection,
-  ComponentProps,
-} from "streamlit-component-lib"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import React, {
+  ReactElement,
   useCallback,
   useEffect,
-  useState,
-  ReactElement,
   useMemo,
   useRef,
+  useState,
 } from "react"
 import { flushSync } from "react-dom"
 import { Document, Page, pdfjs } from "react-pdf"
-import { useVirtualizer } from "@tanstack/react-virtual"
 import styles from "./PdfViewer.module.css"
 import { mergeFileUrlWithStreamlitUrl } from "./urlUtils"
 
-// Configure PDF.js worker to use local file
-// In Streamlit components, files are served from the same origin
+export type PdfViewerProps = {
+  file?: string
+  height?: number
+}
+
+/**
+ * Configure the PDF.js worker location.
+ *
+ * Why module-relative URLs?
+ * - We copy the worker file during the build step via `vite-plugin-static-copy`
+ *   into the component's output alongside our JS bundle. Using
+ *   `new URL(path, import.meta.url)` makes the URL resilient to the final
+ *   mount point (e.g., Streamlit Community Cloud base path, multipage apps),
+ *   since it resolves relative to the built JS file instead of the document
+ *   location or `BASE_URL`.
+ *
+ * Why the `@vite-ignore`?
+ * - The asset is not present in the source tree (it's copied at build time),
+ *   so Vite cannot statically resolve it. We intentionally keep this URL to be
+ *   resolved at runtime after the files are copied, and silence the warning.
+ */
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "./workers/pdf.worker.min.mjs",
-  window.location.href
-).href
+  /* @vite-ignore */ "./workers/pdf.worker.min.mjs",
+  import.meta.url
+).toString()
 
 // Zoom control constants
 const MIN_ZOOM = 0.5
@@ -59,16 +73,13 @@ const PAGE_MARGIN = 12
 /**
  * A simple Streamlit component for viewing PDF files with virtualization
  *
- * @param {ComponentProps} props - The props object passed from Streamlit
- * @param {Object} props.args - Custom arguments passed from the Python side
- * @param {string} props.args.file - PDF file URL or base64 data
- * @param {number} props.args.height - Display height (optional, defaults to 600)
- * @param {Object} props.theme - Theme information from Streamlit
+ * @param {PdfViewerProps} props - Component props
  * @returns {ReactElement} The rendered PDF viewer component
  */
-function PDFViewer({ args, theme }: ComponentProps): ReactElement {
-  const { file: fileUrl, height = 600 } = args
-
+function PDFViewer({
+  file: fileUrl,
+  height = 600,
+}: PdfViewerProps): ReactElement {
   const file = mergeFileUrlWithStreamlitUrl(fileUrl)
 
   const [numPages, setNumPages] = useState<number>(0)
@@ -84,17 +95,33 @@ function PDFViewer({ args, theme }: ComponentProps): ReactElement {
 
   const contentRef = useRef<HTMLDivElement>(null)
   const documentContainerRef = useRef<HTMLDivElement>(null)
-  const inactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const inactivityTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  )
   const containerRef = useRef<HTMLDivElement>(null)
 
   const isHoveringRef = useRef<boolean>(false)
 
-  // Memoize PDF.js options to prevent unnecessary re-renders
+  /**
+   * Memoize PDF.js options to prevent unnecessary re-renders
+   * PDF.js auxiliary assets (character maps and standard fonts).
+   *
+   * These directories are also copied by `vite-plugin-static-copy` into the
+   * build output next to our JS bundle. We resolve them relative to the built
+   * module for the same reasons as the worker (robust across base paths), and
+   * use `@vite-ignore` to avoid build-time resolution warnings.
+   */
   const pdfOptions = useMemo(
     () => ({
-      cMapUrl: "/cmaps/",
+      cMapUrl: new URL(
+        /* @vite-ignore */ "./cmaps/",
+        import.meta.url
+      ).toString(),
       cMapPacked: true,
-      standardFontDataUrl: "/standard_fonts/",
+      standardFontDataUrl: new URL(
+        /* @vite-ignore */ "./standard_fonts/",
+        import.meta.url
+      ).toString(),
     }),
     []
   )
@@ -165,11 +192,6 @@ function PDFViewer({ args, theme }: ComponentProps): ReactElement {
       resizeObserver.disconnect()
     }
   }, [updateContainerWidth])
-
-  // Set frame height when component state changes
-  useEffect(() => {
-    Streamlit.setFrameHeight()
-  }, [numPages, loading, error, height])
 
   // Handle scroll events to hide zoom controls
   useEffect(() => {
@@ -517,4 +539,4 @@ function PDFViewer({ args, theme }: ComponentProps): ReactElement {
   )
 }
 
-export default withStreamlitConnection(PDFViewer)
+export default PDFViewer

@@ -106,4 +106,24 @@ Feel free to file issues in [our Streamlit Repository](https://github.com/stream
 
 Contributions are welcome 🚀, however, please inform us before building a feature.
 
+### Development flow
+
+Prerequisites:
+
+```bash
+uv venv .venv
+source .venv/bin/activate
+uv pip install -e '.[with-streamlit]' .
+cd streamlit_pdf/frontend && npm install
+```
+
+- Build the frontend once:
+  ```bash
+  npm run build
+  ```
+- Or run the frontend in watch/development mode:
+  ```bash
+  npm run dev
+  ```
+
 ---

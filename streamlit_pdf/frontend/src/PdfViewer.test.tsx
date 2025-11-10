@@ -21,21 +21,9 @@ import {
   screen,
   waitFor,
   waitForElementToBeRemoved,
-  fireEvent,
 } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import PdfViewer from "./PdfViewer"
-import type { ComponentProps } from "streamlit-component-lib"
-
-// Mock streamlit-component-lib
-vi.mock("streamlit-component-lib", () => ({
-  ComponentProps: {},
-  Streamlit: {
-    setComponentValue: vi.fn(),
-    setFrameHeight: vi.fn(),
-  },
-  withStreamlitConnection: (component: any) => component,
-}))
+import PdfViewer, { PdfViewerProps } from "./PdfViewer"
 
 // Mock @tanstack/react-virtual
 vi.mock("@tanstack/react-virtual", () => ({
@@ -98,11 +86,8 @@ vi.mock("react-pdf", () => ({
   },
 }))
 
-// Type the PdfViewer component for testing
-const TypedPdfViewer = PdfViewer as React.FC<ComponentProps>
-
 describe("PdfViewer", () => {
-  const defaultArgs = {
+  const defaultProps: PdfViewerProps = {
     file: "data:application/pdf;base64,JVBERi0xLjUKJeLjz9M=",
     height: 600,
   }
@@ -116,13 +101,6 @@ describe("PdfViewer", () => {
     font: "sans-serif",
   }
 
-  const defaultProps: ComponentProps = {
-    args: defaultArgs,
-    theme: defaultTheme,
-    width: 0,
-    disabled: false,
-  }
-
   beforeEach(() => {
     vi.clearAllMocks()
 
@@ -134,13 +112,13 @@ describe("PdfViewer", () => {
     }))
   })
 
-  it("renders without crashing", () => {
-    render(<TypedPdfViewer {...defaultProps} />)
-    expect(screen.getByTestId("pdf-container")).toBeVisible()
+  it("renders without crashing", async () => {
+    render(<PdfViewer {...defaultProps} />)
+    expect(await screen.findByTestId("pdf-container")).toBeVisible()
   })
 
   it("shows no file message when file is not provided", () => {
-    render(<TypedPdfViewer {...defaultProps} args={{ height: 600 }} />)
+    render(<PdfViewer {...defaultProps} file={undefined} />)
     expect(screen.getByText("No PDF file provided")).toBeVisible()
     expect(
       screen.getByText("Please provide a PDF file to display")
@@ -148,12 +126,12 @@ describe("PdfViewer", () => {
   })
 
   it("displays loading state initially", () => {
-    render(<TypedPdfViewer {...defaultProps} />)
+    render(<PdfViewer {...defaultProps} />)
     expect(screen.getByText("Loading PDF...")).toBeInTheDocument()
   })
 
   it("renders pages after loading", async () => {
-    render(<TypedPdfViewer {...defaultProps} />)
+    render(<PdfViewer {...defaultProps} />)
 
     // Wait for the loading state to disappear
     await waitForElementToBeRemoved(() => screen.queryByText("Loading PDF..."))
@@ -168,11 +146,11 @@ describe("PdfViewer", () => {
 
   it("applies custom height", () => {
     const customHeight = 800
-    const customProps = {
+    const customProps: PdfViewerProps = {
       ...defaultProps,
-      args: { ...defaultArgs, height: customHeight },
+      height: customHeight,
     }
-    render(<TypedPdfViewer {...customProps} />)
+    render(<PdfViewer {...customProps} />)
 
     // Check that the height style is actually applied to the content div
     const contentDiv = screen.getByTestId("pdf-content")
@@ -180,7 +158,7 @@ describe("PdfViewer", () => {
   })
 
   it("shows zoom controls", async () => {
-    render(<TypedPdfViewer {...defaultProps} />)
+    render(<PdfViewer {...defaultProps} />)
 
     // Wait for loading to complete
     await waitForElementToBeRemoved(() => screen.queryByText("Loading PDF..."))
@@ -193,7 +171,7 @@ describe("PdfViewer", () => {
   it("handles zoom in functionality", async () => {
     const user = userEvent.setup()
 
-    render(<TypedPdfViewer {...defaultProps} />)
+    render(<PdfViewer {...defaultProps} />)
 
     // Wait for loading to complete
     await waitForElementToBeRemoved(() => screen.queryByText("Loading PDF..."))
@@ -216,7 +194,7 @@ describe("PdfViewer", () => {
   it("handles zoom out functionality", async () => {
     const user = userEvent.setup()
 
-    render(<TypedPdfViewer {...defaultProps} />)
+    render(<PdfViewer {...defaultProps} />)
 
     // Wait for loading to complete
     await waitForElementToBeRemoved(() => screen.queryByText("Loading PDF..."))
@@ -245,7 +223,7 @@ describe("PdfViewer", () => {
       theme: customTheme,
     }
 
-    render(<TypedPdfViewer {...customProps} />)
+    render(<PdfViewer {...customProps} />)
 
     const container = screen.getByTestId("pdf-container")
 
@@ -256,7 +234,7 @@ describe("PdfViewer", () => {
   })
 
   it("renders PDF document container", async () => {
-    render(<TypedPdfViewer {...defaultProps} />)
+    render(<PdfViewer {...defaultProps} />)
 
     // Wait for loading to complete
     await waitForElementToBeRemoved(() => screen.queryByText("Loading PDF..."))
@@ -275,7 +253,7 @@ describe("PdfViewer", () => {
       unobserve: vi.fn(),
     }))
 
-    const { unmount } = render(<TypedPdfViewer {...defaultProps} />)
+    const { unmount } = render(<PdfViewer {...defaultProps} />)
 
     // Verify ResizeObserver is set up
     expect(global.ResizeObserver).toHaveBeenCalledTimes(1)

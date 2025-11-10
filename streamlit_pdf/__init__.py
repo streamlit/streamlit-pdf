@@ -14,16 +14,8 @@
 # limitations under the License.
 
 import io
-import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
-
-# Create a _RELEASE constant. We'll set this to False while we're developing
-# the component, and True when we're ready to package and distribute it.
-# (This is, of course, optional - there are innumerable ways to manage your
-# release process.)
-_DEV = os.environ.get("DEV", False)
-_RELEASE = not _DEV
 
 # Streamlit is an optional runtime dependency. We avoid importing it at module import
 # time so that simply importing this package does not require Streamlit to be
@@ -31,12 +23,10 @@ _RELEASE = not _DEV
 # without Streamlit being present.
 try:
     import streamlit as st  # type: ignore
-    import streamlit.components.v1 as components  # type: ignore
 
     _STREAMLIT_AVAILABLE = True
 except Exception:  # pragma: no cover - only hits when Streamlit is absent
     st = None  # type: ignore
-    components = None  # type: ignore
     _STREAMLIT_AVAILABLE = False
 
 
@@ -50,30 +40,17 @@ def _raise_streamlit_required() -> None:
     )
 
 
-# Declare a Streamlit component for PDF viewing
-if not _RELEASE:
-    if _STREAMLIT_AVAILABLE:
-        _component_func = components.declare_component(
-            "pdf_viewer",
-            url="http://localhost:3001",
-        )
-    else:
-
-        def _component_func(**_kwargs):  # type: ignore
-            _raise_streamlit_required()
+if _STREAMLIT_AVAILABLE:
+    _component_func = st.components.v2.component(
+        name="streamlit-pdf.pdf_viewer",
+        js="assets/index-*.js",
+        css="assets/index-*.css",
+        html='<div class="react-root"></div>',
+    )
 else:
-    # When we're distributing a production version of the component, we'll
-    # replace the `url` param with `path`, and point it to the component's
-    # build directory:
-    parent_dir = os.path.dirname(os.path.abspath(__file__))
-    build_dir = os.path.join(parent_dir, "frontend/build")
 
-    if _STREAMLIT_AVAILABLE:
-        _component_func = components.declare_component("pdf_viewer", path=build_dir)
-    else:
-
-        def _component_func(**_kwargs):  # type: ignore
-            _raise_streamlit_required()
+    def _component_func(**_kwargs):  # type: ignore
+        _raise_streamlit_required()
 
 
 def pdf_viewer(
@@ -135,12 +112,16 @@ def pdf_viewer(
     # Process the file parameter
     processed_file = _process_file_input(file)
 
-    # Call the component function with processed arguments
-    component_value = _component_func(
-        file=processed_file, height=height, key=key, default=None
+    # Mount the CCv2 component with data payload
+    _component_func(
+        key=key,
+        data={
+            "file": processed_file,
+            "height": height,
+        },
     )
 
-    return component_value
+    return None
 
 
 def _process_file_input(

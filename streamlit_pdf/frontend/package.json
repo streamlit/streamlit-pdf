@@ -5,20 +5,23 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@streamlit/component-v2-lib": "^0.1.0",
     "@tanstack/react-virtual": "^3.13.12",
     "pdfjs-dist": "5.3.31",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-pdf": "^10.0.1",
-    "streamlit-component-lib": "^2.0.0"
+    "react-pdf": "^10.0.1"
   },
   "scripts": {
-    "start": "vite",
-    "build": "tsc && vite build",
-    "format": "prettier --write src/**/*.{ts,tsx,css}",
-    "test": "vitest run",
+    "build": "npm run clean && npm run typecheck && cross-env NODE_ENV=production vite build",
+    "clean": "rimraf build",
+    "dev": "cross-env NODE_ENV=development vite build --watch",
+    "format": "prettier --write src/**/*.{ts,tsx,css} vite.config.ts",
+    "test:coverage": "vitest --coverage",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:watch": "vitest --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -43,11 +46,13 @@
     "@types/node": "^22.14.1",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
-    "@vitejs/plugin-react-swc": "^3.9.0",
+    "@vitejs/plugin-react": "^5.1.0",
     "@vitest/ui": "^3.2.4",
+    "cross-env": "^10.1.0",
     "jsdom": "^26.1.0",
     "license-checker-rseidelsohn": "^4.4.2",
     "prettier": "^3.6.2",
+    "rimraf": "^6.1.0",
     "typescript": "^5.8.3",
     "vite": "^6.2.6",
     "vite-plugin-static-copy": "^3.1.0",

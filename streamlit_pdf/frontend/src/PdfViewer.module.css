@@ -18,16 +18,16 @@
 .container {
   width: 100%;
   overflow: hidden;
-  background-color: var(--background-color);
+  background-color: var(--st-background-color);
   position: relative;
 }
 
 .content {
-  background-color: var(--secondary-background-color);
+  background-color: var(--st-secondary-background-color);
   overflow: auto;
   padding: 0;
   position: relative;
-  border-radius: 8px;
+  border-radius: var(--st-base-radius);
 }
 
 .noFileContainer {
@@ -35,9 +35,9 @@
   align-items: center;
   justify-content: center;
   padding: 32px;
-  background-color: var(--secondary-background-color);
-  border: 2px dashed rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  background-color: var(--st-secondary-background-color);
+  border: 2px dashed var(--st-border-color-light);
+  border-radius: var(--st-base-radius);
   text-align: center;
 }
 
@@ -51,13 +51,13 @@
   margin-top: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-color);
+  color: var(--st-text-color);
 }
 
 .noFileText {
   margin-top: 4px;
   font-size: 14px;
-  color: var(--text-color-secondary);
+  color: var(--st-text-color);
 }
 
 .loadingContainer {
@@ -72,8 +72,8 @@
 }
 
 .spinner {
-  border: 2px solid var(--secondary-background-color);
-  border-top: 2px solid var(--primary-color);
+  border: 2px solid var(--st-secondary-background-color);
+  border-top: 2px solid var(--st-primary-color);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -93,7 +93,7 @@
 .loadingText {
   margin-top: 12px;
   font-size: 14px;
-  color: var(--text-color-secondary);
+  color: var(--st-text-color);
 }
 
 .errorContainer {
@@ -114,13 +114,13 @@
   margin-top: 8px;
   font-size: 16px;
   font-weight: 500;
-  color: var(--text-color);
+  color: var(--st-text-color);
 }
 
 .errorText {
   margin-top: 4px;
   font-size: 14px;
-  color: var(--text-color-secondary);
+  color: var(--st-text-color);
 }
 
 .documentContainer {
@@ -144,9 +144,9 @@
 
 .pageContainer {
   display: block;
-  background-color: var(--background-color);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
+  background-color: var(--st-background-color);
+  box-shadow: 0 1px 3px 0 var(--st-border-color-light);
+  border-radius: var(--st-base-radius);
   overflow: visible;
   margin: 0;
 }
@@ -164,9 +164,9 @@
   align-items: center;
   justify-content: center;
   height: var(--default-page-height, 800px);
-  background-color: var(--secondary-background-color);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: var(--text-color-secondary);
+  background-color: var(--st-secondary-background-color);
+  border: 1px solid var(--st-border-color-light);
+  color: var(--st-text-color);
   font-size: 14px;
 }
 
@@ -181,10 +181,10 @@
   right: 0;
   margin: 0.625rem 0.625rem 0 0; /* 10px in rem units */
   z-index: 10;
-  background-color: var(--background-color);
+  background-color: var(--st-background-color);
   border: none;
   border-radius: 4px;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 2px var(--st-border-color-light);
   transition: opacity 0.2s ease;
   opacity: 0;
   padding: 0;
@@ -193,7 +193,10 @@
   pointer-events: none;
 }
 
-.zoomControls.visible {
+.zoomControls.visible,
+/* Ensure that if the zoom controls are focused, especially via keyboard, that
+they are visible */
+.zoomControls:focus-within {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -201,7 +204,7 @@
 
 .zoomButton {
   background-color: transparent;
-  color: var(--text-color);
+  color: var(--st-text-color);
   border: none;
   border-radius: 0;
   width: 29px;
@@ -211,7 +214,7 @@
   justify-content: center;
   cursor: pointer;
   font-size: 16px;
-  font-family: "Source Sans", sans-serif;
+  font-family: var(--st-font);
   user-select: none;
   padding: 0;
   outline: none;
@@ -226,7 +229,7 @@
 }
 
 .zoomButton + .zoomButton {
-  border-top: 1px solid rgba(128, 128, 128, 0.2);
+  border-top: 1px solid var(--st-border-color-light);
 }
 
 .zoomButton:first-child {
@@ -240,15 +243,14 @@
 }
 
 .zoomButton:hover:not(.disabled) {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--st-border-color-light);
 }
 
-.zoomButton:focus {
-  box-shadow: 0 0 2px 2px #0096ff;
-}
-
-.zoomButton:focus:not(:focus-visible) {
-  box-shadow: none;
+.zoomButton:focus-visible {
+  outline: 2px solid var(--st-primary-color);
+  outline-offset: -2px;
+  z-index: 1;
+  border-top-color: transparent; /* ensure separator doesn't mask top edge */
 }
 
 .zoomButton.disabled {
