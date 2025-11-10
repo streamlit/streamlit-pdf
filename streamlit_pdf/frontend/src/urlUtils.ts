@@ -57,8 +57,8 @@ const getStreamlitUrl = () => {
  * Merges a Streamlit-served media path with the Streamlit app base URL.
  *
  * Source of truth for the base URL:
- * - If available, uses `window.parent.__streamlit.DOWNLOAD_ASSETS_BASE_URL` as
- *   the app base.
+ * - If available, uses `window.__streamlit.DOWNLOAD_ASSETS_BASE_URL` as the app
+ *   base.
  * - Otherwise, derives the base from the current window location
  *   (`window.location`), using the origin plus an app-level base path derived
  *   from the pathname:
