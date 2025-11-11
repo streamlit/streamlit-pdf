@@ -1,18 +1,18 @@
-@napi-rs/canvas-linux-x64-gnu 0.1.73
+@napi-rs/canvas-linux-x64-gnu 0.1.81
 MIT
 # `@napi-rs/canvas-linux-x64-gnu`
 
 This is the **x86_64-unknown-linux-gnu** binary for `@napi-rs/canvas`
 
 
-@napi-rs/canvas-linux-x64-musl 0.1.73
+@napi-rs/canvas-linux-x64-musl 0.1.81
 MIT
 # `@napi-rs/canvas-linux-x64-musl`
 
 This is the **x86_64-unknown-linux-musl** binary for `@napi-rs/canvas`
 
 
-@napi-rs/canvas 0.1.73
+@napi-rs/canvas 0.1.81
 MIT
 MIT License
 
@@ -501,7 +501,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-pdfjs-dist 5.3.31
+pdfjs-dist 5.4.296
 Apache-2.0
 
                                  Apache License
@@ -707,7 +707,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-react-pdf 10.0.1
+react-pdf 10.2.0
 MIT
 MIT License
 

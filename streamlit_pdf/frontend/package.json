@@ -7,10 +7,10 @@
   "dependencies": {
     "@streamlit/component-v2-lib": "^0.1.0",
     "@tanstack/react-virtual": "^3.13.12",
-    "pdfjs-dist": "5.3.31",
+    "pdfjs-dist": "5.4.296",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-pdf": "^10.0.1"
+    "react-pdf": "^10.2.0"
   },
   "scripts": {
     "build": "npm run clean && npm run typecheck && cross-env NODE_ENV=production vite build",
