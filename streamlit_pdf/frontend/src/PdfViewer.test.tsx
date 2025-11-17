@@ -157,6 +157,13 @@ describe("PdfViewer", () => {
     expect(contentDiv).toHaveStyle({ height: `${customHeight}px` })
   })
 
+  it("supports CSS height strings", () => {
+    render(<PdfViewer {...defaultProps} height="100%" />)
+
+    const contentDiv = screen.getByTestId("pdf-content")
+    expect(contentDiv).toHaveStyle({ height: "100%" })
+  })
+
   it("shows zoom controls", async () => {
     render(<PdfViewer {...defaultProps} />)
 
