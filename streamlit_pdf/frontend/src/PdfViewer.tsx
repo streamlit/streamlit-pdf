@@ -17,6 +17,7 @@
 
 import { useVirtualizer } from "@tanstack/react-virtual"
 import React, {
+  CSSProperties,
   ReactElement,
   useCallback,
   useEffect,
@@ -31,7 +32,7 @@ import { mergeFileUrlWithStreamlitUrl } from "./urlUtils"
 
 export type PdfViewerProps = {
   file?: string
-  height?: number
+  height?: CSSProperties["height"]
 }
 
 /**
@@ -443,7 +444,7 @@ function PDFViewer({
       <div
         ref={contentRef}
         className={styles.content}
-        style={{ height: `${height}px` }}
+        style={{ height }}
         data-testid="pdf-content"
       >
         {loading && (

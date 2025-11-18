@@ -23,6 +23,7 @@ import type {
 import { StrictMode } from "react"
 import { createRoot, Root } from "react-dom/client"
 import PDFViewer from "./PdfViewer"
+import { getHeight } from "./utils"
 
 interface ViewerState extends ComponentState {
   numPages?: number
@@ -32,7 +33,7 @@ interface ViewerState extends ComponentState {
 
 interface ViewerData {
   file?: string
-  height?: number
+  height?: number | string | "stretch"
 }
 
 // Handle the possibility of multiple instances of the component to keep track
@@ -62,10 +63,7 @@ const ComponentEntry: Component<ViewerState, ViewerData> = component => {
 
   reactRoot.render(
     <StrictMode>
-      <PDFViewer
-        file={data?.file}
-        height={typeof data?.height === "number" ? data.height : undefined}
-      />
+      <PDFViewer file={data?.file} height={getHeight(data?.height)} />
     </StrictMode>
   )
 
