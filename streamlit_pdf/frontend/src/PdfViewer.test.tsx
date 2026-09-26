@@ -117,6 +117,29 @@ describe("PdfViewer", () => {
     expect(await screen.findByTestId("pdf-container")).toBeVisible()
   })
 
+  it("sets accessible name when alt is provided", async () => {
+    render(<PdfViewer {...defaultProps} alt="Q3 2026 financial report" />)
+    const container = await screen.findByTestId("pdf-container")
+    expect(container).toHaveAccessibleName("Q3 2026 financial report")
+    expect(container).toHaveAttribute("role", "region")
+  })
+
+  it("omits accessible name when alt is not provided", async () => {
+    render(<PdfViewer {...defaultProps} />)
+    const container = await screen.findByTestId("pdf-container")
+    expect(container).not.toHaveAttribute("aria-label")
+    expect(container).not.toHaveAttribute("role")
+    expect(container).not.toHaveAccessibleName()
+  })
+
+  it("omits accessible name when alt is blank", async () => {
+    render(<PdfViewer {...defaultProps} alt="   " />)
+    const container = await screen.findByTestId("pdf-container")
+    expect(container).not.toHaveAttribute("aria-label")
+    expect(container).not.toHaveAttribute("role")
+    expect(container).not.toHaveAccessibleName()
+  })
+
   it("shows no file message when file is not provided", () => {
     render(<PdfViewer {...defaultProps} file={undefined} />)
     expect(screen.getByText("No PDF file provided")).toBeVisible()

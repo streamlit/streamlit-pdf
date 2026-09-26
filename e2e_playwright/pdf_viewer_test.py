@@ -71,28 +71,51 @@ def test_pdf_viewer_renders(page: Page):
     expect(page.get_by_test_id("pdf-container")).to_be_visible()
 
 
+def test_pdf_viewer_unlabeled_has_no_accessible_name(page: Page):
+    """Omitted alt must not invent an accessible name on the viewer root."""
+    container = page.get_by_test_id("pdf-container")
+    expect(container).to_be_visible()
+    # Playwright's not_to_have_attribute requires a value; assert absence directly.
+    assert container.get_attribute("aria-label") is None
+    assert container.get_attribute("role") is None
+
+
+def test_pdf_viewer_alt_sets_accessible_name(page: Page):
+    """alt must expose a computed accessible name on pdf-container."""
+    checkbox = page.locator('[data-testid="stCheckbox"]').filter(
+        has_text="Include alt text"
+    )
+    checkbox.click()
+    page.wait_for_load_state("domcontentloaded")
+    try:
+        page.wait_for_load_state("networkidle", timeout=10000)
+    except Exception:
+        pass
+
+    container = page.get_by_test_id("pdf-container")
+    expect(container).to_be_visible()
+    expect(container).to_have_accessible_name("Q3 2026 financial report")
+    expect(container).to_have_attribute("role", "region")
+
+
+def _click_height_slider(page: Page, width_ratio: float = 0.75) -> None:
+    """Interact with the Height slider using current React Aria Streamlit DOM."""
+    slider = page.get_by_test_id("stSlider").filter(
+        has=page.get_by_test_id("stWidgetLabel").get_by_text("Height", exact=True)
+    )
+    expect(slider).to_be_visible()
+    slider.hover()
+    box = slider.bounding_box()
+    if box:
+        page.mouse.click(
+            box["x"] + box["width"] * width_ratio,
+            box["y"] + box["height"] / 2,
+        )
+
+
 def test_pdf_viewer_height_control(page: Page):
     """Test that the PDF viewer height control works correctly."""
-    # Test height slider - Streamlit sliders need special handling
-    # Get the slider container
-    slider_container = page.locator('div[data-testid="stSlider"]').filter(
-        has_text="Height"
-    )
-
-    # Get the current height from the slider's displayed value
-    slider_container.locator('[data-testid="stMarkdownContainer"]').inner_text()
-
-    # Click on the slider to move it
-    slider = slider_container.locator('[role="slider"]')
-    slider_box = slider.bounding_box()
-
-    # Click at a specific position to change the value
-    if slider_box:
-        # Click at 75% of the slider width to set a new value
-        page.mouse.click(
-            slider_box["x"] + slider_box["width"] * 0.75,
-            slider_box["y"] + slider_box["height"] / 2,
-        )
+    _click_height_slider(page, width_ratio=0.75)
 
     # Wait for the value to update and component to re-render
     page.wait_for_load_state("domcontentloaded")
@@ -140,28 +163,33 @@ def test_pdf_viewer_responsive(page: Page):
     expect(page.get_by_test_id("pdf-container")).to_be_visible()
 
 
+def _select_file_type(page: Page, option_name: str) -> None:
+    """Select an option from the file-type selectbox (current Streamlit DOM)."""
+    selectbox = page.locator('[data-testid="stSelectbox"]').filter(
+        has_text="Select file type"
+    )
+    selectbox_input = selectbox.locator("input")
+    selectbox_input.wait_for(state="visible")
+    selectbox_input.click()
+    # ArrowDown opens the dropdown reliably when pointer open is flaky.
+    selectbox_input.press("ArrowDown")
+
+    dropdown = page.get_by_test_id("stSelectboxVirtualDropdown")
+    expect(dropdown).to_be_visible()
+    dropdown.get_by_role("option", name=option_name, exact=True).click()
+
+    page.wait_for_load_state("domcontentloaded")
+    try:
+        page.wait_for_load_state("networkidle", timeout=10000)
+    except Exception:
+        pass
+
+
 def _test_pdf_viewer_with_selectbox(
     page: Page, option_name: str, test_description: str
 ):
     """Helper function to test PDF viewer with selectbox selection."""
-    # Find and click the selectbox
-    selectbox = page.locator('[data-testid="stSelectbox"]').filter(
-        has_text="Select file type"
-    )
-    selectbox.locator('div[data-baseweb="select"] input').click()
-
-    # Click the option in the dropdown
-    page.get_by_role("option", name=option_name, exact=True).click()
-
-    # Wait for DOM to be ready first
-    page.wait_for_load_state("domcontentloaded")
-
-    # Try to wait for network idle, but don't fail if it times out
-    try:
-        page.wait_for_load_state("networkidle", timeout=10000)  # 10 second timeout
-    except Exception:
-        # Continue if networkidle times out - Streamlit components often have ongoing activity
-        pass
+    _select_file_type(page, option_name)
 
     # For Data URI, wait for PDF content to be ready instead of arbitrary timeout
     if option_name == "Data URI":
@@ -230,12 +258,7 @@ def test_pdf_viewer_data_uri_type(page: Page):
 
 def test_pdf_viewer_selectbox_renders_properly(page: Page):
     """Test that PDF viewer renders properly when using selectbox."""
-    # Select a different option
-    selectbox = page.locator('[data-testid="stSelectbox"]').filter(
-        has_text="Select file type"
-    )
-    selectbox.locator('div[data-baseweb="select"] input').click()
-    page.get_by_role("option", name="Path", exact=True).click()
+    _select_file_type(page, "Path")
 
     # Check if container exists
     expect(page.get_by_test_id("pdf-container")).to_be_visible()
@@ -257,19 +280,7 @@ def test_pdf_viewer_selectbox_renders_properly(page: Page):
 
     # Now trigger a re-render by changing the height slider
     if not pdf_pages_visible:
-        slider_container = page.locator('div[data-testid="stSlider"]').filter(
-            has_text="Height"
-        )
-        slider = slider_container.locator('[role="slider"]')
-        slider_box = slider.bounding_box()
-
-        if slider_box:
-            # Move slider slightly
-            page.mouse.click(
-                slider_box["x"] + slider_box["width"] * 0.6,
-                slider_box["y"] + slider_box["height"] / 2,
-            )
-
+        _click_height_slider(page, width_ratio=0.6)
         page.wait_for_load_state("domcontentloaded")
 
         # Check again if PDF is now rendered

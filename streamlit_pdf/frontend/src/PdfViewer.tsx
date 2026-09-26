@@ -33,6 +33,8 @@ import { mergeFileUrlWithStreamlitUrl } from "./urlUtils"
 export type PdfViewerProps = {
   file?: string
   height?: CSSProperties["height"]
+  /** Accessible name exposed as aria-label on the viewer root when set. */
+  alt?: string
 }
 
 /**
@@ -80,8 +82,10 @@ const PAGE_MARGIN = 12
 function PDFViewer({
   file: fileUrl,
   height = 600,
+  alt,
 }: PdfViewerProps): ReactElement {
   const file = mergeFileUrlWithStreamlitUrl(fileUrl)
+  const accessibleName = alt?.trim() || undefined
 
   const [numPages, setNumPages] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(true)
@@ -385,6 +389,10 @@ function PDFViewer({
       ref={containerRef}
       className={styles.container}
       data-testid="pdf-container"
+      // Bare div + aria-label may not expose a name in all AT; add a naming
+      // role only when alt is present so unlabeled viewers stay unchanged.
+      role={accessibleName ? "region" : undefined}
+      aria-label={accessibleName}
       style={
         {
           "--default-page-height": `${calcPageHeight}px`,

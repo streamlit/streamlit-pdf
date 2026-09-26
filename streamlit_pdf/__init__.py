@@ -57,6 +57,8 @@ def pdf_viewer(
     file: Union[str, bytes, Path, io.BytesIO, io.RawIOBase, io.BufferedReader],
     height: int = 600,
     key: Optional[str] = None,
+    *,
+    alt: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """Create a new instance of the PDF viewer component.
 
@@ -78,6 +80,10 @@ def pdf_viewer(
         An optional key that uniquely identifies this component. If this is
         None, and the component's arguments are changed, the component will
         be re-mounted in the Streamlit frontend and lose its current state.
+    alt : str or None, optional
+        An accessible name for the PDF viewer. When provided (and non-blank),
+        it is exposed as ``aria-label`` on the viewer root. Empty or
+        whitespace-only values are omitted. Keyword-only.
 
     Returns
     -------
@@ -93,6 +99,9 @@ def pdf_viewer(
     ...     file="./documents/report.pdf",
     ...     height=1000
     ... )
+
+    With an accessible name:
+    >>> pdf_viewer("report.pdf", alt="Q3 2026 financial report")
 
     Loading from bytes:
     >>> with open("document.pdf", "rb") as f:
@@ -112,13 +121,21 @@ def pdf_viewer(
     # Process the file parameter
     processed_file = _process_file_input(file)
 
+    data: Dict[str, Any] = {
+        "file": processed_file,
+        "height": height,
+    }
+    # Streamlit owns normalize_alt logging; strip blanks here so empty alt
+    # never reaches the frontend payload, and direct callers get a clean name.
+    if alt is not None:
+        trimmed_alt = alt.strip()
+        if trimmed_alt:
+            data["alt"] = trimmed_alt
+
     # Mount the CCv2 component with data payload
     _component_func(
         key=key,
-        data={
-            "file": processed_file,
-            "height": height,
-        },
+        data=data,
     )
 
     return None

@@ -50,6 +50,9 @@ with col2:
         key="file_type_selector",
     )
 
+include_alt = st.checkbox("Include alt text", value=False, key="include_alt")
+alt = "Q3 2026 financial report" if include_alt else None
+
 # Create a sample PDF file path
 sample_pdf_path = Path(__file__).parent / "sample.pdf"
 
@@ -58,25 +61,31 @@ st.subheader(f"PDF Viewer - {file_type}")
 if file_type == "Bytes":
     with open(sample_pdf_path, "rb") as pdf_file:
         pdf_data = pdf_file.read()
-    streamlit_pdf.pdf_viewer(file=pdf_data, height=height, key="pdf_viewer_single")
+    streamlit_pdf.pdf_viewer(
+        file=pdf_data, height=height, key="pdf_viewer_single", alt=alt
+    )
 
 elif file_type == "Path":
     streamlit_pdf.pdf_viewer(
-        file=sample_pdf_path, height=height, key="pdf_viewer_single"
+        file=sample_pdf_path, height=height, key="pdf_viewer_single", alt=alt
     )
 
 elif file_type == "BytesIO":
     with open(sample_pdf_path, "rb") as pdf_file:
         pdf_buffer = io.BytesIO(pdf_file.read())
-    streamlit_pdf.pdf_viewer(file=pdf_buffer, height=height, key="pdf_viewer_single")
+    streamlit_pdf.pdf_viewer(
+        file=pdf_buffer, height=height, key="pdf_viewer_single", alt=alt
+    )
 
 elif file_type == "BufferedReader":
     with open(sample_pdf_path, "rb") as pdf_file:
-        streamlit_pdf.pdf_viewer(file=pdf_file, height=height, key="pdf_viewer_single")
+        streamlit_pdf.pdf_viewer(
+            file=pdf_file, height=height, key="pdf_viewer_single", alt=alt
+        )
 
 elif file_type == "File Path String":
     streamlit_pdf.pdf_viewer(
-        file=str(sample_pdf_path), height=height, key="pdf_viewer_single"
+        file=str(sample_pdf_path), height=height, key="pdf_viewer_single", alt=alt
     )
 
 elif file_type == "Data URI":
@@ -84,4 +93,6 @@ elif file_type == "Data URI":
         pdf_bytes = pdf_file.read()
         pdf_base64 = base64.b64encode(pdf_bytes).decode("utf-8")
         data_uri = f"data:application/pdf;base64,{pdf_base64}"
-    streamlit_pdf.pdf_viewer(file=data_uri, height=height, key="pdf_viewer_single")
+    streamlit_pdf.pdf_viewer(
+        file=data_uri, height=height, key="pdf_viewer_single", alt=alt
+    )

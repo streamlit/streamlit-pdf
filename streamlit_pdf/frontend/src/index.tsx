@@ -34,6 +34,7 @@ interface ViewerState extends ComponentState {
 interface ViewerData {
   file?: string
   height?: number | string | "stretch"
+  alt?: string
 }
 
 // Handle the possibility of multiple instances of the component to keep track
@@ -63,7 +64,11 @@ const ComponentEntry: Component<ViewerState, ViewerData> = component => {
 
   reactRoot.render(
     <StrictMode>
-      <PDFViewer file={data?.file} height={getHeight(data?.height)} />
+      <PDFViewer
+        file={data?.file}
+        height={getHeight(data?.height)}
+        alt={data?.alt}
+      />
     </StrictMode>
   )
 
