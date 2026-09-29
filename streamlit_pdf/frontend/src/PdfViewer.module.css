@@ -260,3 +260,14 @@ they are visible */
 .zoomButton.disabled svg {
   opacity: 0.25;
 }
+
+/* Page Numbers */
+.pageNumber {
+  text-align: center;
+  padding: 4px 0;
+  font-size: 12px;
+  font-family: var(--st-font);
+  color: var(--st-text-color);
+  opacity: 0.6;
+  user-select: none;
+}

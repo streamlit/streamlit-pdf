@@ -534,6 +534,9 @@ function PDFViewer({
                               </div>
                             }
                           />
+                          <div className={styles.pageNumber}>
+                            {pageNumber} / {numPages}
+                          </div>
                         </div>
                       </div>
                     )
